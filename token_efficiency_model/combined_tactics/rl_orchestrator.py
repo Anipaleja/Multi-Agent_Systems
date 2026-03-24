@@ -9,10 +9,10 @@ from common.types import TacticConfig
 
 @dataclass
 class RLStep:
-    state: Tuple[int, int, int]
+    state: Tuple[int, ...]
     action_idx: int
     reward: float
-    next_state: Tuple[int, int, int]
+    next_state: Tuple[int, ...]
 
 
 class RLTokenOrchestrator:
@@ -21,34 +21,49 @@ class RLTokenOrchestrator:
         self.gamma = gamma
         self.epsilon = epsilon
         self.actions = self._build_actions()
-        self.q_table: Dict[Tuple[int, int, int], np.ndarray] = {}
+        self.q_table: Dict[Tuple[int, ...], np.ndarray] = {}
 
     def _build_actions(self) -> List[TacticConfig]:
         actions = []
         for compression_level in [1, 2, 3]:
             for prune_budget in [3, 5, 8]:
                 for protocol_mode in ["compact", "raw-json"]:
-                    actions.append(
-                        TacticConfig(
-                            compression_level=compression_level,
-                            prune_budget=prune_budget,
-                            protocol_mode=protocol_mode,
-                            use_shared_memory=True,
-                        )
-                    )
+                    for delta_mode in ["off", "state-delta"]:
+                        for delta_aggressiveness in [1, 2, 3]:
+                            for wire_mode in ["json", "binary"]:
+                                actions.append(
+                                    TacticConfig(
+                                        compression_level=compression_level,
+                                        prune_budget=prune_budget,
+                                        protocol_mode=protocol_mode,
+                                        use_shared_memory=True,
+                                        delta_mode=delta_mode,
+                                        delta_aggressiveness=delta_aggressiveness,
+                                        wire_mode=wire_mode,
+                                    )
+                                )
         return actions
 
-    def discretize_state(self, complexity: float, urgency: float, context_load: float) -> Tuple[int, int, int]:
+    def discretize_state(
+        self,
+        complexity: float,
+        urgency: float,
+        context_load: float,
+        cache_hit_rate: float = 0.0,
+        continuity: float = 0.0,
+    ) -> Tuple[int, int, int, int, int]:
         c_bin = min(2, int(complexity * 3))
         u_bin = min(2, int(urgency * 3))
         l_bin = min(2, int(context_load * 3))
-        return c_bin, u_bin, l_bin
+        h_bin = min(2, int(cache_hit_rate * 3))
+        n_bin = min(2, int(continuity * 3))
+        return c_bin, u_bin, l_bin, h_bin, n_bin
 
-    def _ensure_state(self, state: Tuple[int, int, int]) -> None:
+    def _ensure_state(self, state: Tuple[int, ...]) -> None:
         if state not in self.q_table:
             self.q_table[state] = np.zeros(len(self.actions), dtype=float)
 
-    def select_action(self, state: Tuple[int, int, int], explore: bool = True) -> Tuple[int, TacticConfig]:
+    def select_action(self, state: Tuple[int, ...], explore: bool = True) -> Tuple[int, TacticConfig]:
         self._ensure_state(state)
         if explore and random.random() < self.epsilon:
             action_idx = random.randrange(len(self.actions))

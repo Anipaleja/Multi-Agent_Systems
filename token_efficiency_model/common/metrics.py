@@ -29,3 +29,13 @@ def quality_proxy_score(compression_strength: float, prune_strength: float, rout
     quality -= 0.22 * prune_strength
     quality += 0.25 * route_fit
     return max(0.0, min(1.0, quality))
+
+
+def steady_state_savings_pct(steady_state_tokens: int, baseline_tokens: int) -> float:
+    return savings_pct(baseline_tokens, steady_state_tokens)
+
+
+def quality_floor_penalty(quality: float, floor: float = 0.98) -> float:
+    if quality >= floor:
+        return 0.0
+    return (floor - quality) * 2.0
