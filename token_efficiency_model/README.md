@@ -57,6 +57,62 @@ python experiments/run_delta_benchmark.py
 - `wire_mode="json" | "binary"`: JSON by default, optional compressed binary wire payload
 - Quality floor enforcement (default `0.98`) with automatic rehydration fallback
 
+## Architecture Diagrams
+
+### Full Pipeline Flow
+
+Live FigJam: [Token Efficiency MAS Flow](https://www.figma.com/online-whiteboard/create-diagram/b400cd26-7735-4d58-b5f9-b188fbdba794?utm_source=other&utm_content=edit_in_figjam&oai_id=&request_id=97355c5e-11f3-4335-aaae-f4b50d8b8195)
+
+```mermaid
+flowchart LR
+  A["Task Input"] --> B["Agent Communication Compression"]
+  B --> C["Smart Context Pruning"]
+  C --> D["Shared Memory Layer"]
+  D --> E{"State Exists?"}
+  E -->|"No"| F["Full Payload Build"]
+  E -->|"Yes"| G["Delta Ops Builder"]
+  G --> H["Custom Protocol Encode"]
+  F --> H
+  H --> I{"Wire Mode"}
+  I -->|"JSON"| J["JSON Payload"]
+  I -->|"Binary"| K["Compressed Binary Payload"]
+  J --> L["Task-Aware Routing"]
+  K --> L
+  L --> M{"Small or Large Model"}
+  M --> N["Model Backend (Llama/Ollama/API)"]
+  N --> O["Quality Floor Check >= 0.98"]
+  O -->|"Pass"| P["Save Snapshot + ACK State"]
+  O -->|"Fail"| Q["Rehydrate Full Context"]
+  Q --> N
+  P --> R["Telemetry: Savings, Steady Tokens, Cache Hit"]
+```
+
+### Delta Path Focus Flow
+
+Live FigJam: [Delta Path Focus Flow](https://www.figma.com/online-whiteboard/create-diagram/0fb9105a-3784-47f4-82f3-63af48be133e?utm_source=other&utm_content=edit_in_figjam&oai_id=&request_id=227837c1-ccb5-4d0c-b84e-68693a64bf42)
+
+```mermaid
+flowchart LR
+  A["Turn 1 (Warm-up): Full Context + Snapshot"] --> B["Store State Snapshot (state_id)"]
+  B --> C["Turn N: Build Current State"]
+  C --> D{"Base state available?"}
+  D -->|"No"| E["Fallback: Full Payload"]
+  D -->|"Yes"| F["Compute Delta Ops vs base_state_id"]
+  F --> G["Build Delta Payload: refs + ops + ack"]
+  G --> H{"Wire Mode"}
+  H -->|"JSON"| I["Compact JSON Delta"]
+  H -->|"Binary"| J["Compressed Binary Delta"]
+  I --> K["Route to Model"]
+  J --> K
+  E --> K
+  K --> L["Model Response"]
+  L --> M{"Quality >= 0.98?"}
+  M -->|"Yes"| N["ACK + Save New Snapshot"]
+  M -->|"No"| O["Rehydrate Full Context + Retry"]
+  O --> K
+  N --> P["Telemetry: steady tokens, cache hit, rehydrations"]
+```
+
 ## Plugging Into Real LLMs (Llama, etc.)
 
 Use `combined_tactics.pipeline.TokenEfficientPipeline` with any callable model backend:
