@@ -1,6 +1,7 @@
 from typing import Callable, Dict, List, Optional, Any
 
 from agent_communication_compression import CommunicationCompressor
+from adaptive_semantic_sampling import AdaptiveSemanticSampler
 from common.metrics import estimate_tokens, estimate_tokens_many, quality_proxy_score, savings_pct
 from common.types import PipelineResult, TaskPacket
 from custom_protocol import AgentProtocol
@@ -22,6 +23,15 @@ class TokenEfficientPipeline:
         self.model_backend = model_backend or self._default_model_backend
         self.quality_floor = quality_floor
         self._turn_count = 0
+        
+        # Initialize adaptive semantic sampler for advanced context selection
+        self.semantic_sampler = AdaptiveSemanticSampler(
+            budget=5,
+            relevance_weight=0.35,
+            frequency_weight=0.25,
+            recency_weight=0.20,
+            entropy_weight=0.20
+        )
 
     def _default_model_backend(self, prompt: str, model_name: str) -> str:
         return f"[{model_name}] simulated response to: {prompt[:120]}"
@@ -92,8 +102,16 @@ class TokenEfficientPipeline:
         compressor = CommunicationCompressor(level=compression_level)
         compressed_messages, compression_stats = compressor.compress_messages(packet.incoming_messages)
 
-        pruner = SmartContextPruner(budget=prune_budget)
-        pruned_context, pruning_scores = pruner.prune(packet.task_text, packet.prior_context)
+        # First pass: adaptive semantic sampling for intelligent context selection
+        sampled_context, sampling_metrics = self.semantic_sampler.sample(
+            contexts=packet.prior_context,
+            task_text=packet.task_text,
+            adaptive_budget=prune_budget
+        )
+        
+        # Second pass: traditional pruning on sampled contexts for fine-grained refinement
+        pruner = SmartContextPruner(budget=max(1, int(prune_budget * 0.8)))
+        pruned_context, pruning_scores = pruner.prune(packet.task_text, sampled_context)
 
         inline_chunks, context_refs = self.memory.materialize_or_reference(pruned_context + compressed_messages)
 
@@ -203,6 +221,12 @@ class TokenEfficientPipeline:
                     "removed_redundant_sentences": compression_stats.removed_redundant_sentences,
                     "original_tokens": compression_stats.original_tokens,
                     "compressed_tokens": compression_stats.compressed_tokens,
+                },
+                "adaptive_sampling": {
+                    "sampled_count": sampling_metrics.get("sampled_count", 0),
+                    "total_count": sampling_metrics.get("total_count", 0),
+                    "average_relevance": sampling_metrics.get("average_relevance", 0.0),
+                    "average_importance": sampling_metrics.get("average_importance", 0.0),
                 },
                 "pruning_scores": pruning_scores,
                 "inline_chunks_count": len(inline_chunks),
