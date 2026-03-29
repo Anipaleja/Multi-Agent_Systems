@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document describes the substantial new features added to the token efficiency model that push token reduction beyond the initial 60% baseline achievement.
+This document describes the new features added to the token efficiency model that push token reduction beyond the initial 60% baseline achievement.
 
 **Key Achievement**: From 60% token reduction → 70-80%+ reduction through intelligent semantic sampling and adversarial scenario testing.
 
