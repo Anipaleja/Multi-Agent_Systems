@@ -1,13 +1,13 @@
 from typing import Callable, Dict, List, Optional, Any
 
-from agent_communication_compression import CommunicationCompressor
-from adaptive_semantic_sampling import AdaptiveSemanticSampler
-from common.metrics import estimate_tokens, estimate_tokens_many, quality_proxy_score, savings_pct
-from common.types import PipelineResult, TaskPacket
-from custom_protocol import AgentProtocol
-from shared_memory_layer import SharedMemoryLayer
-from smart_context_pruning import SmartContextPruner
-from task_aware_routing import TaskAwareRouter
+from ..agent_communication_compression import CommunicationCompressor
+from ..adaptive_semantic_sampling import AdaptiveSemanticSampler
+from ..common.metrics import estimate_tokens, estimate_tokens_many, quality_proxy_score, savings_pct
+from ..common.types import PipelineResult, TaskPacket
+from ..custom_protocol import AgentProtocol
+from ..shared_memory_layer import SharedMemoryLayer
+from ..smart_context_pruning import SmartContextPruner
+from ..task_aware_routing import TaskAwareRouter
 
 
 class TokenEfficientPipeline:

@@ -36,20 +36,20 @@ Agents run sequentially:
 
 This mirrors a real agent handoff chain and demonstrates token redundancy.
 
-## Multi-Provider Architecture
+## Local Ollama Mode
 
-This environment uses **three different AI providers simultaneously** - each agent is powered by a different provider:
+This environment now runs **fully locally** using Ollama plus the token_efficiency_model pipeline. No API keys are needed for the current test flow.
 
-| Agent | Provider | Model | Role |
-|-------|----------|-------|------|
-| **Agent 1 (Architect)** | DeepSeek | `deepseek-chat` | Plans and structures the task |
-| **Agent 2 (Builder)** | Groq | `llama-3.3-70b-versatile` | Executes the plan |
-| **Agent 3 (Reviewer)** | OpenAI | `gpt-4o-mini` | Reviews and synthesizes |
+| Agent | Ollama Model | Role |
+|-------|--------------|------|
+| **Agent 1 (Architect)** | `deepseek-r1:8b` | Plans and structures the task |
+| **Agent 2 (Builder)** | `qwen2.5:7b` | Executes the plan |
+| **Agent 3 (Reviewer)** | `qwen3.5:latest` | Reviews and synthesizes |
 
 This setup allows you to:
-- Compare token usage across different AI providers
-- See how different models handle the same task in a sequential workflow
-- Measure efficiency and cost differences between providers
+- Compare token usage across the local agent chain
+- See how the token_efficiency_model pipeline reduces redundant context
+- Measure efficiency without any external API dependency
 
 ## Setup
 
@@ -57,10 +57,8 @@ This setup allows you to:
 
 - Node.js (v18 or higher)
 - npm or yarn
-- API keys for all three providers:
-  - DeepSeek API key
-  - Groq API key
-  - OpenAI API key
+- Python 3.10+
+- Ollama running locally on `http://127.0.0.1:11434`
 
 ### Installation
 
@@ -69,43 +67,32 @@ This setup allows you to:
 cd default_testing
 ```
 
-2. Create a `.env` file from the example:
-```bash
-cp .env.example .env
-```
-
-3. Edit `.env` and add your API keys:
-```bash
-# Open .env and replace the placeholder values with your actual API keys
-VITE_DEEPSEEK_API_KEY=your_deepseek_api_key_here
-VITE_GROQ_API_KEY=your_groq_api_key_here
-VITE_OPENAI_API_KEY=your_openai_api_key_here
-```
-
-**Where to get API keys:**
-- DeepSeek: https://platform.deepseek.com/
-- Groq: https://console.groq.com/
-- OpenAI: https://platform.openai.com/
-
-4. Install dependencies:
+2. Install frontend dependencies:
 ```bash
 npm install
 ```
 
-5. Start the development server:
+3. Start the development server:
 ```bash
 npm run dev
 ```
 
-6. Open your browser to the URL shown in the terminal (typically `http://localhost:5173`)
+4. Open your browser to the URL shown in the terminal (typically `http://localhost:5173`)
+
+6. Make sure Ollama is running and the models are available:
+```bash
+ollama serve
+ollama pull deepseek-r1:8b
+ollama pull qwen2.5:7b
+ollama pull qwen3.5:latest
+```
 
 ## Usage
 
-1. **API Keys are loaded from your `.env` file**
-   - If you set up the `.env` file correctly, the keys will be pre-filled
-   - You can also manually enter or update keys in the UI
-   - Each field shows which agent will use that provider
-   - All three keys are required to run the agents
+1. **No API keys are needed**
+   - The app runs locally using Ollama and the token_efficiency_model pipeline
+   - Each agent maps to one Ollama model: `deepseek-r1:8b`, `qwen2.5:7b`, `qwen3.5:latest`
+   - The UI shows token savings from the local execution chain
 
 2. **Select a task** from the dropdown menu:
    - Write a product spec for a note-taking app
@@ -113,10 +100,10 @@ npm run dev
    - Create a marketing plan for a new coffee brand
    - Outline a curriculum for teaching Python to beginners
 
-3. **Click "Run Agents"** to start the sequential execution
-   - Agent 1 (Architect) runs first using DeepSeek
-   - Agent 2 (Builder) runs next using Groq
-   - Agent 3 (Reviewer) runs last using OpenAI
+3. **Click "Run Local Agents"** to start the sequential execution
+   - Agent 1 (Architect) runs first with `deepseek-r1:8b`
+   - Agent 2 (Builder) runs next with `qwen2.5:7b`
+   - Agent 3 (Reviewer) runs last with `qwen3.5:latest`
 
 4. **Watch the agents work:**
    - Each agent card shows which provider it's using

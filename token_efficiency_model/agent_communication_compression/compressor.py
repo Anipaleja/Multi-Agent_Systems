@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from typing import List, Tuple
 
-from common.metrics import estimate_tokens_many
-from common.utils import normalize_whitespace, split_sentences
+from ..common.metrics import estimate_tokens_many
+from ..common.utils import normalize_whitespace, split_sentences
 
 
 @dataclass

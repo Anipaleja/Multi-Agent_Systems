@@ -4,7 +4,7 @@ from typing import Dict, List, Tuple
 
 import numpy as np
 
-from common.types import TacticConfig
+from ..common.types import TacticConfig
 
 
 @dataclass

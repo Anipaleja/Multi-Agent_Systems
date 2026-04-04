@@ -1,6 +1,6 @@
 from typing import List, Tuple
 
-from common.utils import lexical_overlap
+from ..common.utils import lexical_overlap
 
 
 class SmartContextPruner:

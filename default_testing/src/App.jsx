@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { TokenEfficiencyPanel } from './TokenEfficiencyPanel';
 
 const PREDEFINED_TASKS = [
   { id: 1, label: "Write a product spec for a note-taking app", value: "Write a product spec for a note-taking app" },
@@ -7,29 +8,7 @@ const PREDEFINED_TASKS = [
   { id: 4, label: "Outline a curriculum for teaching Python to beginners", value: "Outline a curriculum for teaching Python to beginners" },
 ];
 
-const PROVIDERS = [
-  {
-    id: 'deepseek',
-    name: 'DeepSeek',
-    endpoint: 'https://api.deepseek.com/v1/chat/completions',
-    model: 'deepseek-chat',
-    apiKeyPlaceholder: 'sk-...'
-  },
-  {
-    id: 'groq',
-    name: 'Groq',
-    endpoint: 'https://api.groq.com/openai/v1/chat/completions',
-    model: 'llama-3.3-70b-versatile',
-    apiKeyPlaceholder: 'gsk_...'
-  },
-  {
-    id: 'openai',
-    name: 'OpenAI',
-    endpoint: 'https://api.openai.com/v1/chat/completions',
-    model: 'gpt-4o-mini',
-    apiKeyPlaceholder: 'sk-proj-...'
-  }
-];
+const DEFAULT_MODELS = ['qwen2.5:7b', 'qwen2.5:7b', 'qwen2.5:7b'];
 
 const AGENT_CONFIGS = [
   {
@@ -61,66 +40,34 @@ const AGENT_CONFIGS = [
 function App() {
   const [selectedTask, setSelectedTask] = useState(PREDEFINED_TASKS[0].value);
   const [isRunning, setIsRunning] = useState(false);
-  const [apiKeys, setApiKeys] = useState({
-    deepseek: import.meta.env.VITE_DEEPSEEK_API_KEY || '',
-    groq: import.meta.env.VITE_GROQ_API_KEY || '',
-    openai: import.meta.env.VITE_OPENAI_API_KEY || ''
-  });
+  const [availableModels, setAvailableModels] = useState(DEFAULT_MODELS);
+  const [selectedModels, setSelectedModels] = useState(DEFAULT_MODELS);
   const [agents, setAgents] = useState([
-    { id: 1, status: 'idle', output: '', usage: null },
-    { id: 2, status: 'idle', output: '', usage: null },
-    { id: 3, status: 'idle', output: '', usage: null }
+    { id: 1, status: 'idle', output: '', usage: null, model: 'qwen2.5:7b' },
+    { id: 2, status: 'idle', output: '', usage: null, model: 'qwen2.5:7b' },
+    { id: 3, status: 'idle', output: '', usage: null, model: 'qwen2.5:7b' }
   ]);
   const [tokenStats, setTokenStats] = useState(null);
 
-  const callAI = async (promptText, agentName, providerId) => {
-    const provider = PROVIDERS.find(p => p.id === providerId);
-    const apiKey = apiKeys[providerId];
-
-    if (!apiKey) {
-      throw new Error(`API key not set for ${provider.name}`);
-    }
-
-    const response = await fetch(provider.endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: provider.model,
-        max_tokens: 600,
-        messages: [
-          { role: 'user', content: promptText }
-        ]
-      })
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      let errorMessage;
+  useEffect(() => {
+    const loadModels = async () => {
       try {
-        const errorJson = JSON.parse(errorText);
-        errorMessage = errorJson.error?.message || errorJson.message || errorText;
+        const response = await fetch('http://localhost:5000/api/models');
+        const data = await response.json();
+        if (data.success && Array.isArray(data.models) && data.models.length > 0) {
+          setAvailableModels(data.models);
+          if (Array.isArray(data.defaultModels) && data.defaultModels.length === 3) {
+            setSelectedModels(data.defaultModels);
+          }
+        }
       } catch {
-        errorMessage = errorText;
+        setAvailableModels(DEFAULT_MODELS);
+        setSelectedModels(DEFAULT_MODELS);
       }
-      throw new Error(`API Error for ${agentName} (${provider.name}): ${errorMessage}`);
-    }
-
-    const data = await response.json();
-
-    // Extract token usage and content from response
-    // OpenAI-compatible format (DeepSeek, Groq, OpenAI all use this)
-    const content = data.choices[0].message.content;
-    const usage = {
-      input_tokens: data.usage.prompt_tokens,
-      output_tokens: data.usage.completion_tokens,
-      total_tokens: data.usage.total_tokens
     };
 
-    return { content, usage };
-  };
+    loadModels();
+  }, []);
 
   const updateAgentStatus = (agentId, status, output = null, usage = null) => {
     setAgents(prev => prev.map(agent =>
@@ -130,102 +77,47 @@ function App() {
     ));
   };
 
-  const calculateTokenStats = (agentResults) => {
-    const agent1 = agentResults[0];
-    const agent2 = agentResults[1];
-    const agent3 = agentResults[2];
-
-    // Calculate redundant tokens
-    const agent2RedundantTokens = agent1.usage.output_tokens;
-    const agent3RedundantTokens = agent1.usage.output_tokens + agent2.usage.output_tokens;
-
-    const totalRedundantTokens = agent2RedundantTokens + agent3RedundantTokens;
-
-    const totalTokens =
-      agent1.usage.input_tokens + agent1.usage.output_tokens +
-      agent2.usage.input_tokens + agent2.usage.output_tokens +
-      agent3.usage.input_tokens + agent3.usage.output_tokens;
-
-    const uniqueTokens = totalTokens - totalRedundantTokens;
-    const efficiencyScore = Math.round((uniqueTokens / totalTokens) * 100);
-
-    const totalPromptTokens = agent1.usage.input_tokens + agent2.usage.input_tokens + agent3.usage.input_tokens;
-    const totalCompletionTokens = agent1.usage.output_tokens + agent2.usage.output_tokens + agent3.usage.output_tokens;
-
-    return {
-      totalTokens,
-      uniqueTokens,
-      redundantTokens: totalRedundantTokens,
-      efficiencyScore,
-      totalPromptTokens,
-      totalCompletionTokens,
-      agent2RedundantTokens,
-      agent3RedundantTokens
-    };
-  };
-
   const runAgents = async () => {
-    // Check all API keys are present
-    const missingKeys = AGENT_CONFIGS.filter(config => !apiKeys[config.provider]);
-    if (missingKeys.length > 0) {
-      const missingProviders = missingKeys.map(config =>
-        PROVIDERS.find(p => p.id === config.provider).name
-      ).join(', ');
-      alert(`Please enter API keys for: ${missingProviders}`);
-      return;
-    }
-
     setIsRunning(true);
     setTokenStats(null);
 
     // Reset all agents
     setAgents([
-      { id: 1, status: 'idle', output: '', usage: null },
-      { id: 2, status: 'idle', output: '', usage: null },
-      { id: 3, status: 'idle', output: '', usage: null }
+      { id: 1, status: 'idle', output: '', usage: null, model: selectedModels[0] || 'qwen2.5:7b' },
+      { id: 2, status: 'idle', output: '', usage: null, model: selectedModels[1] || 'qwen2.5:7b' },
+      { id: 3, status: 'idle', output: '', usage: null, model: selectedModels[2] || 'qwen2.5:7b' }
     ]);
 
     try {
-      // Agent 1: Architect (DeepSeek)
       updateAgentStatus(1, 'running');
-      const agent1Response = await callAI(
-        AGENT_CONFIGS[0].prompt(selectedTask),
-        'Architect',
-        AGENT_CONFIGS[0].provider
-      );
-      const agent1Output = agent1Response.content;
-      const agent1Usage = agent1Response.usage;
-      updateAgentStatus(1, 'done', agent1Output, agent1Usage);
-
-      // Agent 2: Builder (Groq)
       updateAgentStatus(2, 'running');
-      const agent2Response = await callAI(
-        AGENT_CONFIGS[1].prompt(selectedTask, agent1Output),
-        'Builder',
-        AGENT_CONFIGS[1].provider
-      );
-      const agent2Output = agent2Response.content;
-      const agent2Usage = agent2Response.usage;
-      updateAgentStatus(2, 'done', agent2Output, agent2Usage);
-
-      // Agent 3: Reviewer (OpenAI)
       updateAgentStatus(3, 'running');
-      const agent3Response = await callAI(
-        AGENT_CONFIGS[2].prompt(selectedTask, agent1Output, agent2Output),
-        'Reviewer',
-        AGENT_CONFIGS[2].provider
-      );
-      const agent3Output = agent3Response.content;
-      const agent3Usage = agent3Response.usage;
-      updateAgentStatus(3, 'done', agent3Output, agent3Usage);
 
-      // Calculate token statistics
-      const stats = calculateTokenStats([
-        { usage: agent1Usage },
-        { usage: agent2Usage },
-        { usage: agent3Usage }
-      ]);
-      setTokenStats(stats);
+      const response = await fetch('http://localhost:5000/api/run-agents', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          task_text: selectedTask,
+          complexity: 0.55,
+          urgency: 0.5,
+          selected_models: selectedModels
+        })
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Failed to run local agents');
+      }
+
+      const data = await response.json();
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to run local agents');
+      }
+
+      setAgents(data.agents);
+      setTokenStats(data.tokenStats);
 
     } catch (error) {
       console.error('Error running agents:', error);
@@ -266,39 +158,15 @@ function App() {
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <div className="flex justify-between items-center mb-4">
             <h1 className="text-3xl font-bold text-gray-900">Multi-Agent Test Environment</h1>
-            <span className="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-full">Nexus Demo</span>
+            <span className="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-full">Local Model Demo</span>
           </div>
 
-          {/* API Key Inputs for all providers */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-3">
-              API Keys (Each agent uses a different provider)
-            </label>
-            <div className="space-y-3">
-              {PROVIDERS.map((provider, index) => {
-                const agentConfig = AGENT_CONFIGS.find(a => a.provider === provider.id);
-                return (
-                  <div key={provider.id} className="flex items-center space-x-3">
-                    <div className="flex-shrink-0 w-32">
-                      <span className="text-sm font-medium text-gray-700">
-                        {provider.name}
-                      </span>
-                      <br />
-                      <span className="text-xs text-gray-500">
-                        (Agent {agentConfig?.id}: {agentConfig?.name})
-                      </span>
-                    </div>
-                    <input
-                      type="password"
-                      value={apiKeys[provider.id]}
-                      onChange={(e) => setApiKeys(prev => ({ ...prev, [provider.id]: e.target.value }))}
-                      placeholder={provider.apiKeyPlaceholder}
-                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                    />
-                  </div>
-                );
-              })}
-            </div>
+          {/* Local-only note */}
+          <div className="mb-4 p-4 rounded-lg bg-slate-50 border border-slate-200">
+            <p className="text-sm text-slate-700">
+              This test harness runs locally through Ollama using the per-agent models you select below,
+              with the token_efficiency_model pipeline optimizing prompts first.
+            </p>
           </div>
 
           {/* Task Selection */}
@@ -320,19 +188,47 @@ function App() {
             </select>
           </div>
 
+          {/* Model Selection */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Select Ollama model per agent:
+            </label>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {AGENT_CONFIGS.map((config, idx) => (
+                <div key={config.id}>
+                  <p className="text-xs text-gray-500 mb-1">Agent {config.id} ({config.name})</p>
+                  <select
+                    value={selectedModels[idx] || ''}
+                    onChange={(e) => {
+                      const next = [...selectedModels];
+                      next[idx] = e.target.value;
+                      setSelectedModels(next);
+                    }}
+                    disabled={isRunning}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  >
+                    {availableModels.map((model) => (
+                      <option key={model} value={model}>{model}</option>
+                    ))}
+                  </select>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* Run Button */}
           <button
             onClick={runAgents}
-            disabled={isRunning || !apiKeys.deepseek || !apiKeys.groq || !apiKeys.openai}
+            disabled={isRunning}
             className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors flex items-center justify-center"
           >
             <span className="mr-2">▶</span>
-            {isRunning ? 'Running Agents...' : 'Run Agents'}
+            {isRunning ? 'Running Local Agents...' : 'Run Local Agents'}
           </button>
 
           {/* Info */}
           <div className="mt-3 text-xs text-gray-500 text-center">
-            Each agent uses a different AI provider to complete the task sequentially
+            Agents run locally through Ollama after token_efficiency_model preprocessing
           </div>
         </div>
 
@@ -340,7 +236,6 @@ function App() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
           {agents.map((agent, index) => {
             const config = AGENT_CONFIGS[index];
-            const provider = PROVIDERS.find(p => p.id === config.provider);
             return (
               <div key={agent.id} className="bg-white rounded-lg shadow-sm p-6">
                 <div className="mb-4">
@@ -349,7 +244,7 @@ function App() {
                   <p className="text-xs text-gray-500">{config.role}</p>
                   <div className="mt-2">
                     <span className="inline-block px-2 py-1 bg-indigo-100 text-indigo-800 text-xs font-semibold rounded">
-                      {provider.name} ({provider.model})
+                      Ollama model: {agent.model || 'qwen2.5:7b'}
                     </span>
                   </div>
                 </div>
@@ -487,6 +382,15 @@ function App() {
               </p>
             </div>
           </div>
+        )}
+
+        {/* Token Efficiency Analysis Panel */}
+        {agents.some(a => a.output) && (
+          <TokenEfficiencyPanel 
+            task={selectedTask}
+            messages={agents.map(a => a.output).filter(o => o)}
+            context={[]}
+          />
         )}
       </div>
     </div>
