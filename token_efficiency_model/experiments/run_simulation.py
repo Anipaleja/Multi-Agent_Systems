@@ -6,11 +6,11 @@ from statistics import mean
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
+    sys.path.insert(0, str(ROOT.parent))
 
-from combined_tactics import RLTokenOrchestrator, TokenEfficientPipeline
-from combined_tactics.rl_orchestrator import RLStep
-from common.metrics import quality_floor_penalty
+from token_efficiency_model.combined_tactics import RLTokenOrchestrator, TokenEfficientPipeline
+from token_efficiency_model.combined_tactics.rl_orchestrator import RLStep
+from token_efficiency_model.common.metrics import quality_floor_penalty
 
 
 def synthetic_task(index: int, thread_id: int):
@@ -73,6 +73,9 @@ def run(episodes: int):
     cold_start_tokens = []
     cache_hit_rates = []
     rehydration_events = []
+    diversity_scores = []
+    novelty_gains = []
+    pareto_decisions = 0
 
     for episode in range(episodes):
         thread_id = max(1, episode // 4)
@@ -86,7 +89,14 @@ def run(episodes: int):
             continuity=task["continuity"],
         )
 
-        action_idx, config = orchestrator.select_action(state, explore=True)
+        action_idx, config = orchestrator.select_action(
+            state,
+            explore=True,
+            metrics={
+                "quality": quality_scores[-1] if quality_scores else 1.0,
+                "savings": savings[-1] if savings else 0.0,
+            },
+        )
         result = pipeline.process_task(
             task_text=task["task_text"],
             incoming_messages=task["incoming_messages"],
@@ -129,6 +139,12 @@ def run(episodes: int):
         cache_hit_rates.append(float(result.debug.get("cache_hit_rate", 0.0)))
         rehydration_events.append(int(result.debug.get("rehydration_events", 0)))
 
+        sampling_debug = result.debug.get("adaptive_sampling", {})
+        diversity_scores.append(float(sampling_debug.get("diversity_score", 0.0)))
+        novelty_gains.append(float(sampling_debug.get("average_novelty_gain", 0.0)))
+        if orchestrator.last_selected_reason == "pareto_frontier":
+            pareto_decisions += 1
+
     print("=== RL Token Efficiency Simulation ===")
     print(f"Episodes: {episodes}")
     print(f"Avg Reward: {mean(rewards):.4f}")
@@ -138,6 +154,9 @@ def run(episodes: int):
     print(f"Avg Cold-Start Tokens: {mean(cold_start_tokens):.2f}")
     print(f"Avg Cache Hit Rate: {mean(cache_hit_rates):.3f}")
     print(f"Total Rehydration Events: {sum(rehydration_events)}")
+    print(f"Avg Diversity Score: {mean(diversity_scores):.3f}")
+    print(f"Avg Novelty Gain: {mean(novelty_gains):.3f}")
+    print(f"Pareto Frontier Decisions: {pareto_decisions}/{episodes}")
 
     print("\nSample learned policy (first 5 states):")
     shown = 0

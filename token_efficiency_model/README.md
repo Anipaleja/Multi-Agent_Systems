@@ -6,11 +6,11 @@ It implements the tactics for token efficiency:
 
 1. Agent to agent communication compression
 2. Smart context pruning
-3. **Adaptive semantic sampling** ⭐ (NEW: multi-modal intelligent context selection)
+3. **Adaptive semantic sampling**  (NEW: multi-modal intelligent context selection)
 4. Shared memory layer
 5. Task aware routing
 6. Custom protocol (structured compressed agent language)
-7. Combined tactics with an RL orchestrator
+7. Combined tactics with a Pareto-aware RL orchestrator
 8. Stateful `delta` protocol (send diffs + memory references after warm-up)
 
 ## Folder Structure
@@ -19,7 +19,7 @@ It implements the tactics for token efficiency:
 token_efficiency_model/
   agent_communication_compression/
   smart_context_pruning/
-  adaptive_semantic_sampling/              ⭐ NEW
+  adaptive_semantic_sampling/               NEW
   shared_memory_layer/
   task_aware_routing/
   custom_protocol/
@@ -62,7 +62,9 @@ python experiments/run_delta_benchmark.py
 - Steady-state tokens: token usage after cache warm-up
 - Cold-start tokens: first-turn token cost
 - Cache hit rate / rehydration events: delta-path reliability
-- **Sampling effectiveness**: how well adaptive sampling balances coverage vs. compression ⭐
+- **Sampling effectiveness**: how well adaptive sampling balances coverage vs. compression 
+- **Diversity score / novelty gain**: how much non-redundant context is preserved per token
+- **Pareto decision ratio**: how often orchestration picks non-dominated tactic profiles
 
 ## NEW: Adaptive Semantic Sampling
 
@@ -70,6 +72,8 @@ Advanced intelligent context selection that improves upon naive pruning:
 
 ### Features
 - **Multi-modal scoring**: Combines semantic relevance, entity frequency, recency, and entropy
+- **Novelty-aware reranking (MMR-style)**: Explicitly favors non-redundant context slices
+- **Anchor retention**: Always keeps a high-signal anchor + latest context for continuity
 - **Semantic relevance**: Uses keyword extraction and Jaccard similarity to find task-aligned contexts
 - **Frequency scoring**: Identifies important recurring concepts across conversation history
 - **Recency bias**: Prioritizes recent contexts while maintaining historical context
@@ -82,6 +86,15 @@ Advanced intelligent context selection that improves upon naive pruning:
 3. **Weighted Combination**: Balances factors based on task characteristics
 4. **Adaptive Budget**: Adjusts how many contexts to keep based on complexity and tokens
 5. **Fallback Modes**: Respects token budgets while maintaining quality thresholds
+
+## NEW: Pareto-Aware RL Orchestration
+
+Unlike one-dimensional policy selection, the orchestrator now optimizes on a two-objective frontier:
+
+- **Expected savings** (token reduction potential)
+- **Expected quality** (risk-adjusted answer fidelity)
+
+At runtime, actions are selected from the **Pareto frontier** and scored with a light confidence bonus for under-explored options. This yields policies that are both efficient and robust, instead of overfitting to aggressive compression settings.
 
 ### Example
 ```python

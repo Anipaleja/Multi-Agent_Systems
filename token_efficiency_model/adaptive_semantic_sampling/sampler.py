@@ -1,9 +1,10 @@
-"""Adaptive Semantic Sampler Implementation"""
+"""Adaptive Semantic Sampler Implementation."""
 
 import math
-from typing import List, Dict, Tuple, Set
+import re
 from collections import Counter, defaultdict
 from dataclasses import dataclass
+from typing import Any, Dict, List, Set, Tuple
 
 
 @dataclass
@@ -33,17 +34,36 @@ class AdaptiveSemanticSampler:
                  relevance_weight: float = 0.35,
                  frequency_weight: float = 0.25,
                  recency_weight: float = 0.20,
-                 entropy_weight: float = 0.20):
+                 entropy_weight: float = 0.20,
+                 novelty_weight: float = 0.30):
         self.budget = budget
         self.relevance_weight = relevance_weight
         self.frequency_weight = frequency_weight
         self.recency_weight = recency_weight
         self.entropy_weight = entropy_weight
+        self.novelty_weight = novelty_weight
         
         # Vocabularies for semantic understanding
         self.task_keywords: Set[str] = set()
         self.entity_index: Dict[str, List[int]] = defaultdict(list)
         self.concept_frequency: Counter = Counter()
+
+    def _normalized_weights(self) -> Tuple[float, float, float, float]:
+        total = (
+            self.relevance_weight
+            + self.frequency_weight
+            + self.recency_weight
+            + self.entropy_weight
+        )
+        if total <= 0:
+            return 0.35, 0.25, 0.20, 0.20
+
+        return (
+            self.relevance_weight / total,
+            self.frequency_weight / total,
+            self.recency_weight / total,
+            self.entropy_weight / total,
+        )
     
     def _extract_keywords(self, text: str) -> Set[str]:
         """Extract important keywords from text"""
@@ -56,7 +76,7 @@ class AdaptiveSemanticSampler:
             'these', 'those', 'i', 'you', 'he', 'she', 'it', 'we', 'they'
         }
         
-        words = text.lower().split()
+        words = re.findall(r"[a-zA-Z]{3,}", text.lower())
         keywords = {w for w in words 
                    if len(w) > 3 and w not in stop_words and w.isalpha()}
         return keywords
@@ -150,6 +170,8 @@ class AdaptiveSemanticSampler:
         """
         scores = []
         
+        rel_w, freq_w, rec_w, ent_w = self._normalized_weights()
+
         for idx, context in enumerate(contexts):
             relevance = self._calculate_relevance(context, task_text)
             frequency = self._calculate_frequency_score(context, contexts)
@@ -161,10 +183,10 @@ class AdaptiveSemanticSampler:
             
             # Combined weighted score
             combined = (
-                self.relevance_weight * relevance +
-                self.frequency_weight * frequency +
-                self.recency_weight * recency +
-                self.entropy_weight * entropy
+                rel_w * relevance
+                + freq_w * frequency
+                + rec_w * recency
+                + ent_w * entropy
             )
             
             metrics = SamplingMetrics(
@@ -178,6 +200,80 @@ class AdaptiveSemanticSampler:
             scores.append((idx, combined, metrics))
         
         return scores
+
+    def _keyword_overlap(self, left: str, right: str) -> float:
+        left_keywords = self._extract_keywords(left)
+        right_keywords = self._extract_keywords(right)
+        if not left_keywords or not right_keywords:
+            return 0.0
+
+        union = left_keywords | right_keywords
+        if not union:
+            return 0.0
+        return len(left_keywords & right_keywords) / len(union)
+
+    def _select_with_novelty(
+        self,
+        contexts: List[str],
+        scored: List[Tuple[int, float, SamplingMetrics]],
+        budget: int,
+        forced_indices: Set[int],
+    ) -> Tuple[List[int], float]:
+        chosen: List[int] = sorted(i for i in forced_indices if 0 <= i < len(contexts))
+        novelty_gains: List[float] = []
+
+        if len(chosen) >= budget:
+            return chosen[:budget], 0.0
+
+        selected_set = set(chosen)
+        candidates = list(scored)
+
+        while len(chosen) < budget and candidates:
+            best_idx = None
+            best_score = float("-inf")
+            best_novelty = 0.0
+
+            for idx, base_score, _ in candidates:
+                if idx in selected_set:
+                    continue
+
+                max_similarity = 0.0
+                if chosen:
+                    max_similarity = max(
+                        self._keyword_overlap(contexts[idx], contexts[selected_idx])
+                        for selected_idx in chosen
+                    )
+
+                novelty = 1.0 - max_similarity
+                reranked = (1.0 - self.novelty_weight) * base_score + self.novelty_weight * novelty
+
+                if reranked > best_score:
+                    best_score = reranked
+                    best_idx = idx
+                    best_novelty = novelty
+
+            if best_idx is None:
+                break
+
+            chosen.append(best_idx)
+            selected_set.add(best_idx)
+            novelty_gains.append(best_novelty)
+
+        return chosen, (sum(novelty_gains) / len(novelty_gains) if novelty_gains else 0.0)
+
+    def _anchor_indices(
+        self,
+        contexts: List[str],
+        scored: List[Tuple[int, float, SamplingMetrics]],
+    ) -> Set[int]:
+        if not contexts:
+            return set()
+
+        anchors: Set[int] = {len(contexts) - 1}
+        if scored:
+            anchors.add(max(scored, key=lambda item: item[1])[0])
+
+        return anchors
     
     def sample(self, 
               contexts: List[str],
@@ -203,23 +299,56 @@ class AdaptiveSemanticSampler:
         # Score all contexts
         scores = self.score_contexts(contexts, task_text)
         
-        # Sort by combined score (descending)
         scores.sort(key=lambda x: x[1], reverse=True)
-        
-        # Select top-budget contexts, but preserve some order
-        sampled_indices = sorted([scores[i][0] for i in range(budget)])
+
+        anchors = self._anchor_indices(contexts, scores)
+        sampled_indices, avg_novelty_gain = self._select_with_novelty(
+            contexts=contexts,
+            scored=scores,
+            budget=budget,
+            forced_indices=anchors,
+        )
+        sampled_indices = sorted(sampled_indices)
         sampled_contexts = [contexts[i] for i in sampled_indices]
+
+        selected_metrics = [entry[2] for entry in scores if entry[0] in set(sampled_indices)]
+        top_scored = scores[:budget]
+        diversity_score = 0.0
+        if len(sampled_contexts) > 1:
+            pair_similarities = []
+            for left_idx in range(len(sampled_contexts)):
+                for right_idx in range(left_idx + 1, len(sampled_contexts)):
+                    pair_similarities.append(
+                        self._keyword_overlap(sampled_contexts[left_idx], sampled_contexts[right_idx])
+                    )
+            if pair_similarities:
+                diversity_score = 1.0 - (sum(pair_similarities) / len(pair_similarities))
         
         # Debug info
         debug_info = {
             "sampled_count": len(sampled_contexts),
             "total_count": len(contexts),
             "budget": budget,
-            "average_relevance": sum(s[2].relevance_score for s in scores[:budget]) / budget,
-            "average_importance": sum(s[2].importance_score for s in scores[:budget]) / budget,
-            "average_recency": sum(s[2].recency_score for s in scores[:budget]) / budget,
-            "average_entropy": sum(s[2].combined_score for s in scores[:budget]) / budget,
-            "top_3_scores": [scores[i][1] for i in range(min(3, len(scores)))],
+            "average_relevance": (
+                sum(s.relevance_score for s in selected_metrics) / len(selected_metrics)
+                if selected_metrics else 0.0
+            ),
+            "average_importance": (
+                sum(s.importance_score for s in selected_metrics) / len(selected_metrics)
+                if selected_metrics else 0.0
+            ),
+            "average_recency": (
+                sum(s.recency_score for s in selected_metrics) / len(selected_metrics)
+                if selected_metrics else 0.0
+            ),
+            "average_entropy": (
+                sum(s.combined_score for s in selected_metrics) / len(selected_metrics)
+                if selected_metrics else 0.0
+            ),
+            "diversity_score": diversity_score,
+            "average_novelty_gain": avg_novelty_gain,
+            "anchors_preserved": len(anchors.intersection(set(sampled_indices))),
+            "top_3_scores": [top_scored[i][1] for i in range(min(3, len(top_scored)))],
         }
         
         return sampled_contexts, debug_info

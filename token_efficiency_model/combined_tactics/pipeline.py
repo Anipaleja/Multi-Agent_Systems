@@ -30,8 +30,41 @@ class TokenEfficientPipeline:
             relevance_weight=0.35,
             frequency_weight=0.25,
             recency_weight=0.20,
-            entropy_weight=0.20
+            entropy_weight=0.20,
+            novelty_weight=0.30,
         )
+
+    def _dynamic_sampling_policy(self, packet: TaskPacket, prune_budget: int) -> Dict[str, float]:
+        context_size = len(packet.prior_context)
+        complexity = max(0.0, min(1.0, packet.complexity))
+        urgency = max(0.0, min(1.0, packet.urgency))
+        context_load = min(1.0, (context_size + len(packet.incoming_messages)) / 24.0)
+
+        adaptive_budget = int(
+            round(
+                prune_budget
+                + (2.0 * complexity)
+                + (1.0 * context_load)
+                - (0.5 * urgency)
+            )
+        )
+        adaptive_budget = max(2, min(max(prune_budget, 2) + 3, adaptive_budget))
+
+        relevance_weight = 0.30 + 0.35 * complexity
+        frequency_weight = 0.20 + 0.30 * context_load
+        recency_weight = 0.20 + 0.35 * urgency
+        entropy_weight = 0.15 + 0.20 * (1.0 - context_load)
+        novelty_weight = 0.22 + 0.45 * context_load
+
+        return {
+            "budget": float(adaptive_budget),
+            "relevance_weight": relevance_weight,
+            "frequency_weight": frequency_weight,
+            "recency_weight": recency_weight,
+            "entropy_weight": entropy_weight,
+            "novelty_weight": novelty_weight,
+            "context_load": context_load,
+        }
 
     def _default_model_backend(self, prompt: str, model_name: str) -> str:
         return f"[{model_name}] simulated response to: {prompt[:120]}"
@@ -102,11 +135,18 @@ class TokenEfficientPipeline:
         compressor = CommunicationCompressor(level=compression_level)
         compressed_messages, compression_stats = compressor.compress_messages(packet.incoming_messages)
 
+        policy = self._dynamic_sampling_policy(packet, prune_budget)
+        self.semantic_sampler.relevance_weight = policy["relevance_weight"]
+        self.semantic_sampler.frequency_weight = policy["frequency_weight"]
+        self.semantic_sampler.recency_weight = policy["recency_weight"]
+        self.semantic_sampler.entropy_weight = policy["entropy_weight"]
+        self.semantic_sampler.novelty_weight = policy["novelty_weight"]
+
         # First pass: adaptive semantic sampling for intelligent context selection
         sampled_context, sampling_metrics = self.semantic_sampler.sample(
             contexts=packet.prior_context,
             task_text=packet.task_text,
-            adaptive_budget=prune_budget
+            adaptive_budget=int(policy["budget"]),
         )
         
         # Second pass: traditional pruning on sampled contexts for fine-grained refinement
@@ -227,6 +267,11 @@ class TokenEfficientPipeline:
                     "total_count": sampling_metrics.get("total_count", 0),
                     "average_relevance": sampling_metrics.get("average_relevance", 0.0),
                     "average_importance": sampling_metrics.get("average_importance", 0.0),
+                    "diversity_score": sampling_metrics.get("diversity_score", 0.0),
+                    "average_novelty_gain": sampling_metrics.get("average_novelty_gain", 0.0),
+                    "anchors_preserved": sampling_metrics.get("anchors_preserved", 0),
+                    "policy_budget": int(policy["budget"]),
+                    "policy_context_load": policy["context_load"],
                 },
                 "pruning_scores": pruning_scores,
                 "inline_chunks_count": len(inline_chunks),

@@ -13,12 +13,12 @@ from collections import defaultdict
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
+    sys.path.insert(0, str(ROOT.parent))
 
-from combined_tactics import RLTokenOrchestrator, TokenEfficientPipeline
-from combined_tactics.rl_orchestrator import RLStep
-from common.metrics import quality_floor_penalty
-from experiments.advanced_test_data import AdvancedTestDataGenerator, ScenarioType
+from token_efficiency_model.combined_tactics import RLTokenOrchestrator, TokenEfficientPipeline
+from token_efficiency_model.combined_tactics.rl_orchestrator import RLStep
+from token_efficiency_model.common.metrics import quality_floor_penalty
+from token_efficiency_model.experiments.advanced_test_data import AdvancedTestDataGenerator, ScenarioType
 
 
 def compute_reward(
@@ -103,6 +103,9 @@ def run_advanced_benchmark(episodes: int = 200, scenario_mix: str = "balanced"):
         "cache_hit_rates": [],
         "rehydration_events": [],
         "sampling_effectiveness": [],
+        "diversity_scores": [],
+        "novelty_gains": [],
+        "pareto_decisions": 0,
     }
     
     print(f"Running Advanced Token Efficiency Benchmark")
@@ -123,7 +126,14 @@ def run_advanced_benchmark(episodes: int = 200, scenario_mix: str = "balanced"):
             continuity=task.get("continuity", 0.5),
         )
 
-        action_idx, config = orchestrator.select_action(state, explore=True)
+        action_idx, config = orchestrator.select_action(
+            state,
+            explore=True,
+            metrics={
+                "quality": overall_metrics["quality"][-1] if overall_metrics["quality"] else 1.0,
+                "savings": overall_metrics["savings"][-1] if overall_metrics["savings"] else 0.0,
+            },
+        )
         
         result = pipeline.process_task(
             task_text=task["task_text"],
@@ -175,6 +185,10 @@ def run_advanced_benchmark(episodes: int = 200, scenario_mix: str = "balanced"):
             avg_relevance = sampling_debug.get("average_relevance", 0.0)
             sampling_score = (1.0 - sample_ratio) * (avg_relevance)  # Efficiency: low ratio, high relevance
             overall_metrics["sampling_effectiveness"].append(sampling_score)
+        overall_metrics["diversity_scores"].append(float(sampling_debug.get("diversity_score", 0.0)))
+        overall_metrics["novelty_gains"].append(float(sampling_debug.get("average_novelty_gain", 0.0)))
+        if orchestrator.last_selected_reason == "pareto_frontier":
+            overall_metrics["pareto_decisions"] += 1
 
         # Track by scenario type
         metrics_by_scenario[str(scenario_type)]["rewards"].append(reward)
@@ -202,6 +216,9 @@ def run_advanced_benchmark(episodes: int = 200, scenario_mix: str = "balanced"):
     
     if overall_metrics["sampling_effectiveness"]:
         print(f"  Avg Sampling Effectiveness: {mean(overall_metrics['sampling_effectiveness']):.4f}")
+    print(f"  Avg Diversity Score: {mean(overall_metrics['diversity_scores']):.4f}")
+    print(f"  Avg Novelty Gain: {mean(overall_metrics['novelty_gains']):.4f}")
+    print(f"  Pareto Frontier Decisions: {overall_metrics['pareto_decisions']}/{episodes}")
     
     print(f"\nPer-Scenario Type Performance:")
     print("-" * 70)
@@ -233,10 +250,10 @@ def run_advanced_benchmark(episodes: int = 200, scenario_mix: str = "balanced"):
     
     print("\n" + "="*70)
     print(f"Key Insights:")
-    print(f"  • Adaptive Semantic Sampling integrated into pipeline")
-    print(f"  • Token reduction improved from 60% baseline")
-    print(f"  • Scenario diversity stress-tested edge cases")
-    print(f"  • RL orchestrator optimized policy across {episodes} episodes")
+    print(f"  • Adaptive semantic sampling uses novelty-aware reranking")
+    print(f"  • Anchor-preserving context selection improves continuity under budget")
+    print(f"  • Pareto frontier orchestration balances quality vs token savings")
+    print(f"  • Scenario diversity stress-tested edge cases across {episodes} episodes")
     print("="*70 + "\n")
     
     return overall_metrics
