@@ -135,6 +135,11 @@ def _moe_compact_reasoning(reasoning_texts: list[str], family: str, task_text: s
     """Pass worker reasoning through MoE expert's compression."""
     if not reasoning_texts or not any(reasoning_texts):
         return reasoning_texts
+    # Math reasoning chains are dense — anchors keep numerals, but compression
+    # still strips operator/equation glue between them, so the synthesizer can't
+    # reconstruct the chain. Bypass compression for math; rely on sampling alone.
+    if family == "math":
+        return reasoning_texts
 
     try:
         result = _moe_pipeline_singleton.process_task(
@@ -270,19 +275,38 @@ def run(item: SuiteItem) -> PipelineRun:
     ]
     reasonings_compact = _moe_compact_reasoning(reasonings_raw, task_family, effective_task_text)
 
-    synth_prompt_optimized = OPTIMIZED_SYNTHESIZE_TEMPLATE.format(
-        task_text=effective_task_text,
-        answer_format=item.answer_format,
-        w1_answer=answers[0],
-        w1_reasoning=reasonings_compact[0],
-        w1_conf=confidences[0],
-        w2_answer=answers[1],
-        w2_reasoning=reasonings_compact[1],
-        w2_conf=confidences[1],
-        w3_answer=answers[2],
-        w3_reasoning=reasonings_compact[2],
-        w3_conf=confidences[2],
-    )
+    def _w_json(obj: dict | None) -> str:
+        if obj is None:
+            return json.dumps({"answer": "", "reasoning": "(unparseable)", "confidence": 0.0})
+        return json.dumps(obj)
+
+    if task_family == "math":
+        # Math regressed -26.7pp on gsm8k with the lean synth template — the
+        # rules preamble carries instructions the synthesizer relies on to
+        # combine numerical worker outputs. Use the baseline template so the
+        # synthesizer sees full structure.
+        synth_prompt_optimized = BASELINE_SYNTHESIZE_TEMPLATE.format(
+            task_text=effective_task_text,
+            answer_format=item.answer_format,
+            synthesis_strategy=synthesis_strategy,
+            worker_1_json=_w_json(worker_outputs[0]),
+            worker_2_json=_w_json(worker_outputs[1]),
+            worker_3_json=_w_json(worker_outputs[2]),
+        )
+    else:
+        synth_prompt_optimized = OPTIMIZED_SYNTHESIZE_TEMPLATE.format(
+            task_text=effective_task_text,
+            answer_format=item.answer_format,
+            w1_answer=answers[0],
+            w1_reasoning=reasonings_compact[0],
+            w1_conf=confidences[0],
+            w2_answer=answers[1],
+            w2_reasoning=reasonings_compact[1],
+            w2_conf=confidences[1],
+            w3_answer=answers[2],
+            w3_reasoning=reasonings_compact[2],
+            w3_conf=confidences[2],
+        )
 
     synth_result = _client_for(SUPERVISOR_PROVIDER).call(
         model=SUPERVISOR_MODEL,
@@ -305,11 +329,6 @@ def run(item: SuiteItem) -> PipelineRun:
     # Quality-floor rollback: if the lean prompt failed to parse,
     # rerun with the baseline synthesis prompt on the same worker outputs.
     if synth_obj is None:
-        def _w_json(obj: dict | None) -> str:
-            if obj is None:
-                return json.dumps({"answer": "", "reasoning": "(unparseable)", "confidence": 0.0})
-            return json.dumps(obj)
-
         rollback_prompt = BASELINE_SYNTHESIZE_TEMPLATE.format(
             task_text=effective_task_text,
             answer_format=item.answer_format,

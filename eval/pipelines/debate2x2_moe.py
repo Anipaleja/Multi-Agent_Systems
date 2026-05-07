@@ -136,6 +136,10 @@ def _moe_compact_text(text: str, family: str, task_text: str) -> str:
     """Pass a single text through MoE expert's compression."""
     if not text:
         return text
+    # Math reasoning chains are dense — anchors keep numerals, but compression
+    # still strips operator/equation glue between them. Bypass for math.
+    if family == "math":
+        return text
 
     try:
         result = _moe_pipeline_singleton.process_task(
