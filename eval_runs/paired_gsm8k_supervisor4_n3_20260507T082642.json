@@ -1,0 +1,96 @@
+{
+  "suite": "gsm8k",
+  "shape": "supervisor4",
+  "n": 3,
+  "baseline": {
+    "n_correct": 0,
+    "accuracy": 0.0,
+    "total_tokens": 5347,
+    "total_cost_usd": 0.00130695
+  },
+  "optimized": {
+    "n_correct": 0,
+    "accuracy": 0.0,
+    "total_tokens": 4517,
+    "total_cost_usd": 0.00114645
+  },
+  "delta": {
+    "accuracy_delta": 0.0,
+    "n_broken_by_optimizer": 0,
+    "n_fixed_by_optimizer": 0,
+    "mcnemar_two_sided_p": 1.0,
+    "token_reduction_pct": 15.52272302225547,
+    "cost_reduction_pct": 12.280500401698614
+  },
+  "pairs": [
+    {
+      "item_id": "gsm8k/test/0",
+      "gold": "18",
+      "baseline": {
+        "predicted": "26",
+        "predicted_canonical": "26",
+        "is_correct": false,
+        "total_tokens": 1813,
+        "total_cost_usd": 0.00044205000000000004,
+        "wall_time_ms": 6965.928493998945,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "0",
+        "predicted_canonical": "0",
+        "is_correct": false,
+        "total_tokens": 1572,
+        "total_cost_usd": 0.00040275,
+        "wall_time_ms": 7230.7760620024055,
+        "parse_error": null
+      },
+      "token_reduction_pct": 13.292884721456149
+    },
+    {
+      "item_id": "gsm8k/test/1",
+      "gold": "3",
+      "baseline": {
+        "predicted": "3.5",
+        "predicted_canonical": "3.5",
+        "is_correct": false,
+        "total_tokens": 1738,
+        "total_cost_usd": 0.0004263,
+        "wall_time_ms": 10204.178735031746,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "5",
+        "predicted_canonical": "5",
+        "is_correct": false,
+        "total_tokens": 1419,
+        "total_cost_usd": 0.0003582,
+        "wall_time_ms": 6848.719083005562,
+        "parse_error": null
+      },
+      "token_reduction_pct": 18.354430379746837
+    },
+    {
+      "item_id": "gsm8k/test/2",
+      "gold": "70000",
+      "baseline": {
+        "predicted": "25000",
+        "predicted_canonical": "25000",
+        "is_correct": false,
+        "total_tokens": 1796,
+        "total_cost_usd": 0.0004386,
+        "wall_time_ms": 8457.723196945153,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "250000",
+        "predicted_canonical": "250000",
+        "is_correct": false,
+        "total_tokens": 1526,
+        "total_cost_usd": 0.0003855,
+        "wall_time_ms": 8154.886494972743,
+        "parse_error": null
+      },
+      "token_reduction_pct": 15.033407572383073
+    }
+  ]
+}

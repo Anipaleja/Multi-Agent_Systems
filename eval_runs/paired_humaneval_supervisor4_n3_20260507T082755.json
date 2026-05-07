@@ -1,0 +1,96 @@
+{
+  "suite": "humaneval",
+  "shape": "supervisor4",
+  "n": 3,
+  "baseline": {
+    "n_correct": 1,
+    "accuracy": 0.3333333333333333,
+    "total_tokens": 7315,
+    "total_cost_usd": 0.0019936499999999996
+  },
+  "optimized": {
+    "n_correct": 1,
+    "accuracy": 0.3333333333333333,
+    "total_tokens": 6126,
+    "total_cost_usd": 0.00170325
+  },
+  "delta": {
+    "accuracy_delta": 0.0,
+    "n_broken_by_optimizer": 0,
+    "n_fixed_by_optimizer": 0,
+    "mcnemar_two_sided_p": 1.0,
+    "token_reduction_pct": 16.254272043745726,
+    "cost_reduction_pct": 14.566247836882088
+  },
+  "pairs": [
+    {
+      "item_id": "humaneval/test/0",
+      "gold": "HumanEval/0",
+      "baseline": {
+        "predicted": "def has_close_elements(numbers: List[float], threshold: float) -> bool:\n    for i in range(len(numbers)):\n        for j in range(i + 1, len(numbers)):\n            if abs(numbers[i] - numbers[j]) < threshold:\n                return True\n    return False",
+        "predicted_canonical": "<fail>",
+        "is_correct": false,
+        "total_tokens": 2894,
+        "total_cost_usd": 0.0008269499999999999,
+        "wall_time_ms": 15218.19758194033,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "def has_close_elements(numbers: List[float], threshold: float) -> bool:\n    for i in range(len(numbers)):\n        for j in range(i + 1, len(numbers)):\n            if abs(numbers[i] - numbers[j]) < threshold:\n                return True\n    return False",
+        "predicted_canonical": "<fail>",
+        "is_correct": false,
+        "total_tokens": 2305,
+        "total_cost_usd": 0.0006603,
+        "wall_time_ms": 13593.108375906013,
+        "parse_error": null
+      },
+      "token_reduction_pct": 20.352453351762268
+    },
+    {
+      "item_id": "humaneval/test/1",
+      "gold": "HumanEval/1",
+      "baseline": {
+        "predicted": "def separate_paren_groups(paren_string: str) -> List[str]:\n    paren_string = paren_string.replace(' ', '')\n    groups = []\n    stack = []\n    current_group = ''\n    for char in paren_string:\n        current_group += char\n        if char == '(': \n            stack.append(char)\n        elif char == ')':\n            if stack:\n                stack.pop()\n            if not stack:\n                groups.append(current_group)\n                current_group = ''\n    return groups",
+        "predicted_canonical": "<fail>",
+        "is_correct": false,
+        "total_tokens": 2242,
+        "total_cost_usd": 0.0005995499999999999,
+        "wall_time_ms": 10396.317196893506,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "def separate_paren_groups(paren_string: str) -> List[str]:\n    paren_string = paren_string.replace(' ', '')\n    groups = []\n    stack = []\n    current_group = ''\n    for char in paren_string:\n        current_group += char\n        if char == '(':  \n            stack.append(char)\n        elif char == ')':\n            stack.pop()\n            if not stack:\n                groups.append(current_group)\n                current_group = ''\n    return groups",
+        "predicted_canonical": "<fail>",
+        "is_correct": false,
+        "total_tokens": 1927,
+        "total_cost_usd": 0.0005351999999999999,
+        "wall_time_ms": 9452.01389491558,
+        "parse_error": null
+      },
+      "token_reduction_pct": 14.049955396966993
+    },
+    {
+      "item_id": "humaneval/test/2",
+      "gold": "HumanEval/2",
+      "baseline": {
+        "predicted": "def truncate_number(number: float) -> float:\n    return number - int(number)",
+        "predicted_canonical": "<pass>",
+        "is_correct": true,
+        "total_tokens": 2179,
+        "total_cost_usd": 0.00056715,
+        "wall_time_ms": 9585.383570054546,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "def truncate_number(number: float) -> float:\n    return number - int(number)",
+        "predicted_canonical": "<pass>",
+        "is_correct": true,
+        "total_tokens": 1894,
+        "total_cost_usd": 0.00050775,
+        "wall_time_ms": 7268.994161044247,
+        "parse_error": null
+      },
+      "token_reduction_pct": 13.079394217530977
+    }
+  ]
+}
