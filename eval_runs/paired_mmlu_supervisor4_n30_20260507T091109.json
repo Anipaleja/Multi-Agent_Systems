@@ -1,0 +1,717 @@
+{
+  "suite": "mmlu",
+  "shape": "supervisor4",
+  "n": 30,
+  "baseline": {
+    "n_correct": 16,
+    "accuracy": 0.5333333333333333,
+    "total_tokens": 61167,
+    "total_cost_usd": 0.015992999999999997
+  },
+  "optimized": {
+    "n_correct": 15,
+    "accuracy": 0.5,
+    "total_tokens": 51911,
+    "total_cost_usd": 0.014377800000000003
+  },
+  "delta": {
+    "accuracy_delta": -0.033333333333333326,
+    "n_broken_by_optimizer": 3,
+    "n_fixed_by_optimizer": 2,
+    "mcnemar_two_sided_p": 1.0,
+    "token_reduction_pct": 15.132342603037586,
+    "cost_reduction_pct": 10.099418495591785
+  },
+  "pairs": [
+    {
+      "item_id": "mmlu/test/0",
+      "gold": "B",
+      "baseline": {
+        "predicted": "B",
+        "predicted_canonical": "B",
+        "is_correct": true,
+        "total_tokens": 2012,
+        "total_cost_usd": 0.0005367,
+        "wall_time_ms": 12672.832213924266,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "B",
+        "predicted_canonical": "B",
+        "is_correct": true,
+        "total_tokens": 1566,
+        "total_cost_usd": 0.0004239,
+        "wall_time_ms": 10206.812346004881,
+        "parse_error": null
+      },
+      "token_reduction_pct": 22.166998011928428
+    },
+    {
+      "item_id": "mmlu/test/1",
+      "gold": "C",
+      "baseline": {
+        "predicted": "B",
+        "predicted_canonical": "B",
+        "is_correct": false,
+        "total_tokens": 2205,
+        "total_cost_usd": 0.00060615,
+        "wall_time_ms": 10009.822959080338,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "B",
+        "predicted_canonical": "B",
+        "is_correct": false,
+        "total_tokens": 1779,
+        "total_cost_usd": 0.00051255,
+        "wall_time_ms": 8922.45491000358,
+        "parse_error": null
+      },
+      "token_reduction_pct": 19.319727891156464
+    },
+    {
+      "item_id": "mmlu/test/2",
+      "gold": "D",
+      "baseline": {
+        "predicted": "D",
+        "predicted_canonical": "D",
+        "is_correct": true,
+        "total_tokens": 2142,
+        "total_cost_usd": 0.00057285,
+        "wall_time_ms": 12391.747250920162,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "A",
+        "predicted_canonical": "A",
+        "is_correct": false,
+        "total_tokens": 1814,
+        "total_cost_usd": 0.00051105,
+        "wall_time_ms": 10839.083506027237,
+        "parse_error": null
+      },
+      "token_reduction_pct": 15.31279178338002
+    },
+    {
+      "item_id": "mmlu/test/3",
+      "gold": "B",
+      "baseline": {
+        "predicted": "C",
+        "predicted_canonical": "C",
+        "is_correct": false,
+        "total_tokens": 2033,
+        "total_cost_usd": 0.0005258999999999999,
+        "wall_time_ms": 8392.288772040047,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "C",
+        "predicted_canonical": "C",
+        "is_correct": false,
+        "total_tokens": 1655,
+        "total_cost_usd": 0.0004431,
+        "wall_time_ms": 9044.496502028778,
+        "parse_error": null
+      },
+      "token_reduction_pct": 18.593212001967537
+    },
+    {
+      "item_id": "mmlu/test/4",
+      "gold": "B",
+      "baseline": {
+        "predicted": "C",
+        "predicted_canonical": "C",
+        "is_correct": false,
+        "total_tokens": 2057,
+        "total_cost_usd": 0.00053085,
+        "wall_time_ms": 13374.873552005738,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "C",
+        "predicted_canonical": "C",
+        "is_correct": false,
+        "total_tokens": 1793,
+        "total_cost_usd": 0.00049575,
+        "wall_time_ms": 22641.31187403109,
+        "parse_error": null
+      },
+      "token_reduction_pct": 12.834224598930483
+    },
+    {
+      "item_id": "mmlu/test/5",
+      "gold": "A",
+      "baseline": {
+        "predicted": "B",
+        "predicted_canonical": "B",
+        "is_correct": false,
+        "total_tokens": 2033,
+        "total_cost_usd": 0.0005187,
+        "wall_time_ms": 6846.73704393208,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "B",
+        "predicted_canonical": "B",
+        "is_correct": false,
+        "total_tokens": 1721,
+        "total_cost_usd": 0.0004637999999999999,
+        "wall_time_ms": 6976.031610975042,
+        "parse_error": null
+      },
+      "token_reduction_pct": 15.346778160354157
+    },
+    {
+      "item_id": "mmlu/test/6",
+      "gold": "A",
+      "baseline": {
+        "predicted": "C",
+        "predicted_canonical": "C",
+        "is_correct": false,
+        "total_tokens": 2070,
+        "total_cost_usd": 0.0005368500000000001,
+        "wall_time_ms": 17456.991315004416,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "C",
+        "predicted_canonical": "C",
+        "is_correct": false,
+        "total_tokens": 1841,
+        "total_cost_usd": 0.00050925,
+        "wall_time_ms": 9136.141612078063,
+        "parse_error": null
+      },
+      "token_reduction_pct": 11.062801932367151
+    },
+    {
+      "item_id": "mmlu/test/7",
+      "gold": "D",
+      "baseline": {
+        "predicted": "C",
+        "predicted_canonical": "C",
+        "is_correct": false,
+        "total_tokens": 1932,
+        "total_cost_usd": 0.00049275,
+        "wall_time_ms": 8843.263459973969,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "C",
+        "predicted_canonical": "C",
+        "is_correct": false,
+        "total_tokens": 1570,
+        "total_cost_usd": 0.00041775000000000004,
+        "wall_time_ms": 7322.049804031849,
+        "parse_error": null
+      },
+      "token_reduction_pct": 18.73706004140787
+    },
+    {
+      "item_id": "mmlu/test/8",
+      "gold": "B",
+      "baseline": {
+        "predicted": "B",
+        "predicted_canonical": "B",
+        "is_correct": true,
+        "total_tokens": 1910,
+        "total_cost_usd": 0.0004975499999999999,
+        "wall_time_ms": 12211.296265013516,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "B",
+        "predicted_canonical": "B",
+        "is_correct": true,
+        "total_tokens": 1678,
+        "total_cost_usd": 0.0004749,
+        "wall_time_ms": 7850.826672045514,
+        "parse_error": null
+      },
+      "token_reduction_pct": 12.146596858638743
+    },
+    {
+      "item_id": "mmlu/test/9",
+      "gold": "C",
+      "baseline": {
+        "predicted": "C",
+        "predicted_canonical": "C",
+        "is_correct": true,
+        "total_tokens": 2088,
+        "total_cost_usd": 0.0005562,
+        "wall_time_ms": 11093.703274033032,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "C",
+        "predicted_canonical": "C",
+        "is_correct": true,
+        "total_tokens": 1792,
+        "total_cost_usd": 0.0005082,
+        "wall_time_ms": 9997.07502592355,
+        "parse_error": null
+      },
+      "token_reduction_pct": 14.17624521072797
+    },
+    {
+      "item_id": "mmlu/test/10",
+      "gold": "C",
+      "baseline": {
+        "predicted": "C",
+        "predicted_canonical": "C",
+        "is_correct": true,
+        "total_tokens": 2026,
+        "total_cost_usd": 0.00051945,
+        "wall_time_ms": 9574.092959053814,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "C",
+        "predicted_canonical": "C",
+        "is_correct": true,
+        "total_tokens": 1756,
+        "total_cost_usd": 0.00047579999999999996,
+        "wall_time_ms": 8469.779990962707,
+        "parse_error": null
+      },
+      "token_reduction_pct": 13.326752221125371
+    },
+    {
+      "item_id": "mmlu/test/11",
+      "gold": "C",
+      "baseline": {
+        "predicted": "C",
+        "predicted_canonical": "C",
+        "is_correct": true,
+        "total_tokens": 2081,
+        "total_cost_usd": 0.0005493,
+        "wall_time_ms": 12812.217317987233,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "C",
+        "predicted_canonical": "C",
+        "is_correct": true,
+        "total_tokens": 1765,
+        "total_cost_usd": 0.00049155,
+        "wall_time_ms": 8178.138724993914,
+        "parse_error": null
+      },
+      "token_reduction_pct": 15.185007208073042
+    },
+    {
+      "item_id": "mmlu/test/12",
+      "gold": "A",
+      "baseline": {
+        "predicted": "C",
+        "predicted_canonical": "C",
+        "is_correct": false,
+        "total_tokens": 1980,
+        "total_cost_usd": 0.00052425,
+        "wall_time_ms": 8020.862402045168,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "C",
+        "predicted_canonical": "C",
+        "is_correct": false,
+        "total_tokens": 1663,
+        "total_cost_usd": 0.0004749,
+        "wall_time_ms": 10710.982664022595,
+        "parse_error": null
+      },
+      "token_reduction_pct": 16.01010101010101
+    },
+    {
+      "item_id": "mmlu/test/13",
+      "gold": "C",
+      "baseline": {
+        "predicted": "B",
+        "predicted_canonical": "B",
+        "is_correct": false,
+        "total_tokens": 2372,
+        "total_cost_usd": 0.0006357,
+        "wall_time_ms": 11609.557808027603,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "B",
+        "predicted_canonical": "B",
+        "is_correct": false,
+        "total_tokens": 1967,
+        "total_cost_usd": 0.00054795,
+        "wall_time_ms": 9574.342749081552,
+        "parse_error": null
+      },
+      "token_reduction_pct": 17.074198988195615
+    },
+    {
+      "item_id": "mmlu/test/14",
+      "gold": "C",
+      "baseline": {
+        "predicted": "D",
+        "predicted_canonical": "D",
+        "is_correct": false,
+        "total_tokens": 2143,
+        "total_cost_usd": 0.00058785,
+        "wall_time_ms": 10517.573736025952,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "C",
+        "predicted_canonical": "C",
+        "is_correct": true,
+        "total_tokens": 1944,
+        "total_cost_usd": 0.0006039,
+        "wall_time_ms": 9227.309384965338,
+        "parse_error": null
+      },
+      "token_reduction_pct": 9.286047596826878
+    },
+    {
+      "item_id": "mmlu/test/15",
+      "gold": "B",
+      "baseline": {
+        "predicted": "C",
+        "predicted_canonical": "C",
+        "is_correct": false,
+        "total_tokens": 1939,
+        "total_cost_usd": 0.0005019,
+        "wall_time_ms": 11232.193429023027,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "C",
+        "predicted_canonical": "C",
+        "is_correct": false,
+        "total_tokens": 1622,
+        "total_cost_usd": 0.0004372499999999999,
+        "wall_time_ms": 7372.745390050113,
+        "parse_error": null
+      },
+      "token_reduction_pct": 16.34863331614234
+    },
+    {
+      "item_id": "mmlu/test/16",
+      "gold": "C",
+      "baseline": {
+        "predicted": "C",
+        "predicted_canonical": "C",
+        "is_correct": true,
+        "total_tokens": 1985,
+        "total_cost_usd": 0.0005223,
+        "wall_time_ms": 14232.596157002263,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "C",
+        "predicted_canonical": "C",
+        "is_correct": true,
+        "total_tokens": 1784,
+        "total_cost_usd": 0.00050565,
+        "wall_time_ms": 7792.951984098181,
+        "parse_error": null
+      },
+      "token_reduction_pct": 10.125944584382871
+    },
+    {
+      "item_id": "mmlu/test/17",
+      "gold": "C",
+      "baseline": {
+        "predicted": "C",
+        "predicted_canonical": "C",
+        "is_correct": true,
+        "total_tokens": 1893,
+        "total_cost_usd": 0.00048150000000000005,
+        "wall_time_ms": 8386.916354997084,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "D",
+        "predicted_canonical": "D",
+        "is_correct": false,
+        "total_tokens": 1792,
+        "total_cost_usd": 0.0005055000000000001,
+        "wall_time_ms": 11491.35045800358,
+        "parse_error": null
+      },
+      "token_reduction_pct": 5.335446381405177
+    },
+    {
+      "item_id": "mmlu/test/18",
+      "gold": "D",
+      "baseline": {
+        "predicted": "D",
+        "predicted_canonical": "D",
+        "is_correct": true,
+        "total_tokens": 2043,
+        "total_cost_usd": 0.0005427,
+        "wall_time_ms": 6403.815860976465,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "D",
+        "predicted_canonical": "D",
+        "is_correct": true,
+        "total_tokens": 1490,
+        "total_cost_usd": 0.00038955,
+        "wall_time_ms": 8552.230461034924,
+        "parse_error": null
+      },
+      "token_reduction_pct": 27.06803720019579
+    },
+    {
+      "item_id": "mmlu/test/19",
+      "gold": "A",
+      "baseline": {
+        "predicted": "A",
+        "predicted_canonical": "A",
+        "is_correct": true,
+        "total_tokens": 2072,
+        "total_cost_usd": 0.00053355,
+        "wall_time_ms": 9084.331864956766,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "A",
+        "predicted_canonical": "A",
+        "is_correct": true,
+        "total_tokens": 1783,
+        "total_cost_usd": 0.0004848,
+        "wall_time_ms": 9344.21403100714,
+        "parse_error": null
+      },
+      "token_reduction_pct": 13.947876447876448
+    },
+    {
+      "item_id": "mmlu/test/20",
+      "gold": "A",
+      "baseline": {
+        "predicted": "D",
+        "predicted_canonical": "D",
+        "is_correct": false,
+        "total_tokens": 2022,
+        "total_cost_usd": 0.00051435,
+        "wall_time_ms": 11429.424831992947,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "C",
+        "predicted_canonical": "C",
+        "is_correct": false,
+        "total_tokens": 1819,
+        "total_cost_usd": 0.00050145,
+        "wall_time_ms": 10128.541367012076,
+        "parse_error": null
+      },
+      "token_reduction_pct": 10.039564787339268
+    },
+    {
+      "item_id": "mmlu/test/21",
+      "gold": "A",
+      "baseline": {
+        "predicted": "B",
+        "predicted_canonical": "B",
+        "is_correct": false,
+        "total_tokens": 1979,
+        "total_cost_usd": 0.0004998,
+        "wall_time_ms": 6886.988369049504,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "C",
+        "predicted_canonical": "C",
+        "is_correct": false,
+        "total_tokens": 1673,
+        "total_cost_usd": 0.0004458,
+        "wall_time_ms": 7100.975592038594,
+        "parse_error": null
+      },
+      "token_reduction_pct": 15.462354724608387
+    },
+    {
+      "item_id": "mmlu/test/22",
+      "gold": "D",
+      "baseline": {
+        "predicted": "D",
+        "predicted_canonical": "D",
+        "is_correct": true,
+        "total_tokens": 1963,
+        "total_cost_usd": 0.0004969499999999999,
+        "wall_time_ms": 6315.236680093221,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "D",
+        "predicted_canonical": "D",
+        "is_correct": true,
+        "total_tokens": 1697,
+        "total_cost_usd": 0.00045525,
+        "wall_time_ms": 6877.283609006554,
+        "parse_error": null
+      },
+      "token_reduction_pct": 13.550687722873153
+    },
+    {
+      "item_id": "mmlu/test/23",
+      "gold": "D",
+      "baseline": {
+        "predicted": "D",
+        "predicted_canonical": "D",
+        "is_correct": true,
+        "total_tokens": 2023,
+        "total_cost_usd": 0.00053745,
+        "wall_time_ms": 11054.33918396011,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "D",
+        "predicted_canonical": "D",
+        "is_correct": true,
+        "total_tokens": 1619,
+        "total_cost_usd": 0.0004458,
+        "wall_time_ms": 13488.645997014828,
+        "parse_error": null
+      },
+      "token_reduction_pct": 19.970341077607515
+    },
+    {
+      "item_id": "mmlu/test/24",
+      "gold": "B",
+      "baseline": {
+        "predicted": "A",
+        "predicted_canonical": "A",
+        "is_correct": false,
+        "total_tokens": 1961,
+        "total_cost_usd": 0.0005034,
+        "wall_time_ms": 10684.313431032933,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "C",
+        "predicted_canonical": "C",
+        "is_correct": false,
+        "total_tokens": 1630,
+        "total_cost_usd": 0.00043575,
+        "wall_time_ms": 8603.333677980117,
+        "parse_error": null
+      },
+      "token_reduction_pct": 16.879143294237632
+    },
+    {
+      "item_id": "mmlu/test/25",
+      "gold": "C",
+      "baseline": {
+        "predicted": "C",
+        "predicted_canonical": "C",
+        "is_correct": true,
+        "total_tokens": 1977,
+        "total_cost_usd": 0.0005098500000000001,
+        "wall_time_ms": 13284.440322080627,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "C",
+        "predicted_canonical": "C",
+        "is_correct": true,
+        "total_tokens": 1681,
+        "total_cost_usd": 0.00046095,
+        "wall_time_ms": 7003.641488961875,
+        "parse_error": null
+      },
+      "token_reduction_pct": 14.972180070814364
+    },
+    {
+      "item_id": "mmlu/test/26",
+      "gold": "C",
+      "baseline": {
+        "predicted": "C",
+        "predicted_canonical": "C",
+        "is_correct": true,
+        "total_tokens": 2181,
+        "total_cost_usd": 0.0005926499999999999,
+        "wall_time_ms": 11029.64764693752,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "C",
+        "predicted_canonical": "C",
+        "is_correct": true,
+        "total_tokens": 1765,
+        "total_cost_usd": 0.0005036999999999999,
+        "wall_time_ms": 11178.711764980108,
+        "parse_error": null
+      },
+      "token_reduction_pct": 19.073819348922513
+    },
+    {
+      "item_id": "mmlu/test/27",
+      "gold": "B",
+      "baseline": {
+        "predicted": "A",
+        "predicted_canonical": "A",
+        "is_correct": false,
+        "total_tokens": 2118,
+        "total_cost_usd": 0.000558,
+        "wall_time_ms": 10531.169369933195,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "B",
+        "predicted_canonical": "B",
+        "is_correct": true,
+        "total_tokens": 1948,
+        "total_cost_usd": 0.00056535,
+        "wall_time_ms": 9346.450073993765,
+        "parse_error": null
+      },
+      "token_reduction_pct": 8.026440037771483
+    },
+    {
+      "item_id": "mmlu/test/28",
+      "gold": "D",
+      "baseline": {
+        "predicted": "D",
+        "predicted_canonical": "D",
+        "is_correct": true,
+        "total_tokens": 2014,
+        "total_cost_usd": 0.00051855,
+        "wall_time_ms": 10353.018668014556,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "C",
+        "predicted_canonical": "C",
+        "is_correct": false,
+        "total_tokens": 1693,
+        "total_cost_usd": 0.0004551,
+        "wall_time_ms": 10701.335510006174,
+        "parse_error": null
+      },
+      "token_reduction_pct": 15.938430983118174
+    },
+    {
+      "item_id": "mmlu/test/29",
+      "gold": "A",
+      "baseline": {
+        "predicted": "A",
+        "predicted_canonical": "A",
+        "is_correct": true,
+        "total_tokens": 1913,
+        "total_cost_usd": 0.000489,
+        "wall_time_ms": 10758.665888104588,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "A",
+        "predicted_canonical": "A",
+        "is_correct": true,
+        "total_tokens": 1611,
+        "total_cost_usd": 0.00043154999999999995,
+        "wall_time_ms": 7470.939674065448,
+        "parse_error": null
+      },
+      "token_reduction_pct": 15.78672242550967
+    }
+  ]
+}

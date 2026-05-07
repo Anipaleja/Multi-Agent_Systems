@@ -1,0 +1,717 @@
+{
+  "suite": "longctx_qa",
+  "shape": "debate2x2",
+  "n": 30,
+  "baseline": {
+    "n_correct": 30,
+    "accuracy": 1.0,
+    "total_tokens": 126836,
+    "total_cost_usd": 0.023111400000000004
+  },
+  "optimized": {
+    "n_correct": 30,
+    "accuracy": 1.0,
+    "total_tokens": 98201,
+    "total_cost_usd": 0.0188373
+  },
+  "delta": {
+    "accuracy_delta": 0.0,
+    "n_broken_by_optimizer": 0,
+    "n_fixed_by_optimizer": 0,
+    "mcnemar_two_sided_p": 1.0,
+    "token_reduction_pct": 22.576397868113155,
+    "cost_reduction_pct": 18.4934707546925
+  },
+  "pairs": [
+    {
+      "item_id": "longctx_qa/validation/cluster0",
+      "gold": "Santa Clara, California",
+      "baseline": {
+        "predicted": "Levi's Stadium in the San Francisco Bay Area at Santa Clara, California",
+        "predicted_canonical": "levi s stadium in san francisco bay area at santa clara californ",
+        "is_correct": true,
+        "total_tokens": 5378,
+        "total_cost_usd": 0.00094215,
+        "wall_time_ms": 8124.510661000386,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "Levi's Stadium",
+        "predicted_canonical": "levi s stadium",
+        "is_correct": true,
+        "total_tokens": 2609,
+        "total_cost_usd": 0.0005578499999999999,
+        "wall_time_ms": 7996.483797091059,
+        "parse_error": null
+      },
+      "token_reduction_pct": 51.48754183711417
+    },
+    {
+      "item_id": "longctx_qa/validation/cluster1",
+      "gold": "American Football Conference",
+      "baseline": {
+        "predicted": "American Football Conference",
+        "predicted_canonical": "american football conference",
+        "is_correct": true,
+        "total_tokens": 5330,
+        "total_cost_usd": 0.00092235,
+        "wall_time_ms": 5731.902203988284,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "American Football Conference",
+        "predicted_canonical": "american football conference",
+        "is_correct": true,
+        "total_tokens": 4428,
+        "total_cost_usd": 0.0007951499999999999,
+        "wall_time_ms": 5722.0794189488515,
+        "parse_error": null
+      },
+      "token_reduction_pct": 16.923076923076923
+    },
+    {
+      "item_id": "longctx_qa/validation/cluster2",
+      "gold": "Levi's Stadium",
+      "baseline": {
+        "predicted": "Levi's Stadium",
+        "predicted_canonical": "levi s stadium",
+        "is_correct": true,
+        "total_tokens": 5332,
+        "total_cost_usd": 0.0009222,
+        "wall_time_ms": 6771.1052630329505,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "Levi's Stadium",
+        "predicted_canonical": "levi s stadium",
+        "is_correct": true,
+        "total_tokens": 4365,
+        "total_cost_usd": 0.0007712999999999999,
+        "wall_time_ms": 6264.731712988578,
+        "parse_error": null
+      },
+      "token_reduction_pct": 18.135783945986496
+    },
+    {
+      "item_id": "longctx_qa/validation/cluster3",
+      "gold": "Santa Clara",
+      "baseline": {
+        "predicted": "Santa Clara",
+        "predicted_canonical": "santa clara",
+        "is_correct": true,
+        "total_tokens": 5541,
+        "total_cost_usd": 0.0009854999999999998,
+        "wall_time_ms": 7265.913426992483,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "Santa Clara, California",
+        "predicted_canonical": "santa clara california",
+        "is_correct": true,
+        "total_tokens": 4369,
+        "total_cost_usd": 0.0007764,
+        "wall_time_ms": 6095.394126023166,
+        "parse_error": null
+      },
+      "token_reduction_pct": 21.151416711784876
+    },
+    {
+      "item_id": "longctx_qa/validation/cluster4",
+      "gold": "Denver Broncos",
+      "baseline": {
+        "predicted": "Denver Broncos",
+        "predicted_canonical": "denver broncos",
+        "is_correct": true,
+        "total_tokens": 5329,
+        "total_cost_usd": 0.00092715,
+        "wall_time_ms": 6973.293466027826,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "Denver Broncos",
+        "predicted_canonical": "denver broncos",
+        "is_correct": true,
+        "total_tokens": 4323,
+        "total_cost_usd": 0.0007609499999999999,
+        "wall_time_ms": 5542.293364997022,
+        "parse_error": null
+      },
+      "token_reduction_pct": 18.877838243572903
+    },
+    {
+      "item_id": "longctx_qa/validation/cluster5",
+      "gold": "Santa Clara, California.",
+      "baseline": {
+        "predicted": "Levi's Stadium in the San Francisco Bay Area at Santa Clara, California",
+        "predicted_canonical": "levi s stadium in san francisco bay area at santa clara californ",
+        "is_correct": true,
+        "total_tokens": 5400,
+        "total_cost_usd": 0.0009503999999999999,
+        "wall_time_ms": 10055.44129491318,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "Levi's Stadium in the San Francisco Bay Area at Santa Clara, California",
+        "predicted_canonical": "levi s stadium in san francisco bay area at santa clara californ",
+        "is_correct": true,
+        "total_tokens": 4415,
+        "total_cost_usd": 0.0007923,
+        "wall_time_ms": 7216.564008034766,
+        "parse_error": null
+      },
+      "token_reduction_pct": 18.24074074074074
+    },
+    {
+      "item_id": "longctx_qa/validation/cluster6",
+      "gold": "1995",
+      "baseline": {
+        "predicted": "1995",
+        "predicted_canonical": "1995",
+        "is_correct": true,
+        "total_tokens": 4672,
+        "total_cost_usd": 0.00082725,
+        "wall_time_ms": 6942.974937963299,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "1995",
+        "predicted_canonical": "1995",
+        "is_correct": true,
+        "total_tokens": 2096,
+        "total_cost_usd": 0.00042015,
+        "wall_time_ms": 5622.753259027377,
+        "parse_error": null
+      },
+      "token_reduction_pct": 55.13698630136986
+    },
+    {
+      "item_id": "longctx_qa/validation/cluster7",
+      "gold": "New England Patriots",
+      "baseline": {
+        "predicted": "New England Patriots",
+        "predicted_canonical": "new england patriots",
+        "is_correct": true,
+        "total_tokens": 5013,
+        "total_cost_usd": 0.0009337499999999999,
+        "wall_time_ms": 9167.632936965674,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "New England Patriots",
+        "predicted_canonical": "new england patriots",
+        "is_correct": true,
+        "total_tokens": 3821,
+        "total_cost_usd": 0.0006906,
+        "wall_time_ms": 6013.548296061344,
+        "parse_error": null
+      },
+      "token_reduction_pct": 23.778176740474766
+    },
+    {
+      "item_id": "longctx_qa/validation/cluster8",
+      "gold": "12\u20134",
+      "baseline": {
+        "predicted": "12\u20134",
+        "predicted_canonical": "124",
+        "is_correct": true,
+        "total_tokens": 4725,
+        "total_cost_usd": 0.0008334,
+        "wall_time_ms": 6209.463554085232,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "12\u20134",
+        "predicted_canonical": "124",
+        "is_correct": true,
+        "total_tokens": 3879,
+        "total_cost_usd": 0.0006988499999999999,
+        "wall_time_ms": 6421.195209957659,
+        "parse_error": null
+      },
+      "token_reduction_pct": 17.904761904761905
+    },
+    {
+      "item_id": "longctx_qa/validation/cluster9",
+      "gold": "2",
+      "baseline": {
+        "predicted": "2",
+        "predicted_canonical": "2",
+        "is_correct": true,
+        "total_tokens": 4664,
+        "total_cost_usd": 0.0008193,
+        "wall_time_ms": 7558.13597899396,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "2",
+        "predicted_canonical": "2",
+        "is_correct": true,
+        "total_tokens": 3809,
+        "total_cost_usd": 0.0006856500000000001,
+        "wall_time_ms": 6870.9780890494585,
+        "parse_error": null
+      },
+      "token_reduction_pct": 18.331903945111492
+    },
+    {
+      "item_id": "longctx_qa/validation/cluster10",
+      "gold": "Cam Newton",
+      "baseline": {
+        "predicted": "Cam Newton",
+        "predicted_canonical": "cam newton",
+        "is_correct": true,
+        "total_tokens": 4703,
+        "total_cost_usd": 0.00083595,
+        "wall_time_ms": 6921.622451976873,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "Cam Newton",
+        "predicted_canonical": "cam newton",
+        "is_correct": true,
+        "total_tokens": 4220,
+        "total_cost_usd": 0.0008175,
+        "wall_time_ms": 9663.064805907197,
+        "parse_error": null
+      },
+      "token_reduction_pct": 10.270040399744843
+    },
+    {
+      "item_id": "longctx_qa/validation/cluster11",
+      "gold": "Broncos",
+      "baseline": {
+        "predicted": "the Broncos",
+        "predicted_canonical": "broncos",
+        "is_correct": true,
+        "total_tokens": 3515,
+        "total_cost_usd": 0.00064875,
+        "wall_time_ms": 6017.520550056361,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "Broncos",
+        "predicted_canonical": "broncos",
+        "is_correct": true,
+        "total_tokens": 1922,
+        "total_cost_usd": 0.0004017,
+        "wall_time_ms": 6374.0437789820135,
+        "parse_error": null
+      },
+      "token_reduction_pct": 45.32005689900427
+    },
+    {
+      "item_id": "longctx_qa/validation/cluster12",
+      "gold": "Von Miller",
+      "baseline": {
+        "predicted": "Von Miller",
+        "predicted_canonical": "von miller",
+        "is_correct": true,
+        "total_tokens": 3483,
+        "total_cost_usd": 0.0006408,
+        "wall_time_ms": 6451.398954959586,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "Von Miller",
+        "predicted_canonical": "von miller",
+        "is_correct": true,
+        "total_tokens": 2874,
+        "total_cost_usd": 0.0005431500000000001,
+        "wall_time_ms": 10728.492994909175,
+        "parse_error": null
+      },
+      "token_reduction_pct": 17.48492678725237
+    },
+    {
+      "item_id": "longctx_qa/validation/cluster13",
+      "gold": "5",
+      "baseline": {
+        "predicted": "five",
+        "predicted_canonical": "five",
+        "is_correct": true,
+        "total_tokens": 3524,
+        "total_cost_usd": 0.00064605,
+        "wall_time_ms": 5833.740279078484,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "five",
+        "predicted_canonical": "five",
+        "is_correct": true,
+        "total_tokens": 2908,
+        "total_cost_usd": 0.00054555,
+        "wall_time_ms": 5786.980196950026,
+        "parse_error": null
+      },
+      "token_reduction_pct": 17.480136208853576
+    },
+    {
+      "item_id": "longctx_qa/validation/cluster14",
+      "gold": "three",
+      "baseline": {
+        "predicted": "three",
+        "predicted_canonical": "three",
+        "is_correct": true,
+        "total_tokens": 3525,
+        "total_cost_usd": 0.00064755,
+        "wall_time_ms": 6299.179549911059,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "three",
+        "predicted_canonical": "three",
+        "is_correct": true,
+        "total_tokens": 2913,
+        "total_cost_usd": 0.000549,
+        "wall_time_ms": 6496.5472859330475,
+        "parse_error": null
+      },
+      "token_reduction_pct": 17.361702127659576
+    },
+    {
+      "item_id": "longctx_qa/validation/cluster15",
+      "gold": "three",
+      "baseline": {
+        "predicted": "three",
+        "predicted_canonical": "three",
+        "is_correct": true,
+        "total_tokens": 3841,
+        "total_cost_usd": 0.00075165,
+        "wall_time_ms": 9060.909425956197,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "three",
+        "predicted_canonical": "three",
+        "is_correct": true,
+        "total_tokens": 3134,
+        "total_cost_usd": 0.0006249,
+        "wall_time_ms": 10498.924097977579,
+        "parse_error": null
+      },
+      "token_reduction_pct": 18.406664931007548
+    },
+    {
+      "item_id": "longctx_qa/validation/cluster16",
+      "gold": "Coldplay",
+      "baseline": {
+        "predicted": "Coldplay",
+        "predicted_canonical": "coldplay",
+        "is_correct": true,
+        "total_tokens": 3803,
+        "total_cost_usd": 0.0006951,
+        "wall_time_ms": 11235.12959992513,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "Coldplay",
+        "predicted_canonical": "coldplay",
+        "is_correct": true,
+        "total_tokens": 2169,
+        "total_cost_usd": 0.00047385,
+        "wall_time_ms": 9036.56693000812,
+        "parse_error": null
+      },
+      "token_reduction_pct": 42.96607941099132
+    },
+    {
+      "item_id": "longctx_qa/validation/cluster17",
+      "gold": "Beyonc\u00e9",
+      "baseline": {
+        "predicted": "Beyonc\u00e9",
+        "predicted_canonical": "beyonce",
+        "is_correct": true,
+        "total_tokens": 3988,
+        "total_cost_usd": 0.0007511999999999999,
+        "wall_time_ms": 12942.145028966479,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "Beyonc\u00e9",
+        "predicted_canonical": "beyonce",
+        "is_correct": true,
+        "total_tokens": 3536,
+        "total_cost_usd": 0.0007234499999999998,
+        "wall_time_ms": 9678.180504008196,
+        "parse_error": null
+      },
+      "token_reduction_pct": 11.334002006018054
+    },
+    {
+      "item_id": "longctx_qa/validation/cluster18",
+      "gold": "Bruno Mars",
+      "baseline": {
+        "predicted": "Bruno Mars",
+        "predicted_canonical": "bruno mars",
+        "is_correct": true,
+        "total_tokens": 3806,
+        "total_cost_usd": 0.0006969,
+        "wall_time_ms": 6983.268060022965,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "Bruno Mars",
+        "predicted_canonical": "bruno mars",
+        "is_correct": true,
+        "total_tokens": 3109,
+        "total_cost_usd": 0.00058515,
+        "wall_time_ms": 8078.328531933948,
+        "parse_error": null
+      },
+      "token_reduction_pct": 18.313189700472936
+    },
+    {
+      "item_id": "longctx_qa/validation/cluster19",
+      "gold": "Beyonc\u00e9 and Bruno Mars",
+      "baseline": {
+        "predicted": "Beyonc\u00e9 and Bruno Mars",
+        "predicted_canonical": "beyonce and bruno mars",
+        "is_correct": true,
+        "total_tokens": 3873,
+        "total_cost_usd": 0.0007137,
+        "wall_time_ms": 9093.846719013527,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "Beyonc\u00e9 and Bruno Mars",
+        "predicted_canonical": "beyonce and bruno mars",
+        "is_correct": true,
+        "total_tokens": 3167,
+        "total_cost_usd": 0.0005988,
+        "wall_time_ms": 8445.428494014777,
+        "parse_error": null
+      },
+      "token_reduction_pct": 18.2287632326362
+    },
+    {
+      "item_id": "longctx_qa/validation/cluster20",
+      "gold": "$5 million",
+      "baseline": {
+        "predicted": "5 million",
+        "predicted_canonical": "5 million",
+        "is_correct": true,
+        "total_tokens": 3890,
+        "total_cost_usd": 0.0007297499999999999,
+        "wall_time_ms": 10223.407640005462,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "5 million",
+        "predicted_canonical": "5 million",
+        "is_correct": true,
+        "total_tokens": 3198,
+        "total_cost_usd": 0.0006160499999999999,
+        "wall_time_ms": 9512.153088930063,
+        "parse_error": null
+      },
+      "token_reduction_pct": 17.789203084832906
+    },
+    {
+      "item_id": "longctx_qa/validation/cluster21",
+      "gold": "the 50th Super Bowl",
+      "baseline": {
+        "predicted": "50th Super Bowl",
+        "predicted_canonical": "50th super bowl",
+        "is_correct": true,
+        "total_tokens": 3145,
+        "total_cost_usd": 0.0006108,
+        "wall_time_ms": 7990.910227061249,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "50th Super Bowl",
+        "predicted_canonical": "50th super bowl",
+        "is_correct": true,
+        "total_tokens": 2109,
+        "total_cost_usd": 0.00048284999999999995,
+        "wall_time_ms": 12507.099846960045,
+        "parse_error": null
+      },
+      "token_reduction_pct": 32.94117647058823
+    },
+    {
+      "item_id": "longctx_qa/validation/cluster22",
+      "gold": "Roger Goodell",
+      "baseline": {
+        "predicted": "Roger Goodell",
+        "predicted_canonical": "roger goodell",
+        "is_correct": true,
+        "total_tokens": 2919,
+        "total_cost_usd": 0.0005638499999999999,
+        "wall_time_ms": 9400.185885024257,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "Roger Goodell",
+        "predicted_canonical": "roger goodell",
+        "is_correct": true,
+        "total_tokens": 2302,
+        "total_cost_usd": 0.0004497,
+        "wall_time_ms": 7131.208335980773,
+        "parse_error": null
+      },
+      "token_reduction_pct": 21.137375813634808
+    },
+    {
+      "item_id": "longctx_qa/validation/cluster23",
+      "gold": "New Orleans' Mercedes-Benz Superdome",
+      "baseline": {
+        "predicted": "New Orleans' Mercedes-Benz Superdome",
+        "predicted_canonical": "new orleans mercedes benz superdome",
+        "is_correct": true,
+        "total_tokens": 2920,
+        "total_cost_usd": 0.00057075,
+        "wall_time_ms": 8126.645895070396,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "Mercedes-Benz Superdome",
+        "predicted_canonical": "mercedes benz superdome",
+        "is_correct": true,
+        "total_tokens": 2072,
+        "total_cost_usd": 0.0004755,
+        "wall_time_ms": 10115.302228950895,
+        "parse_error": null
+      },
+      "token_reduction_pct": 29.041095890410958
+    },
+    {
+      "item_id": "longctx_qa/validation/cluster24",
+      "gold": "Levi's Stadium",
+      "baseline": {
+        "predicted": "Levi's Stadium",
+        "predicted_canonical": "levi s stadium",
+        "is_correct": true,
+        "total_tokens": 2926,
+        "total_cost_usd": 0.0005748,
+        "wall_time_ms": 8640.784102957696,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "Levi's Stadium",
+        "predicted_canonical": "levi s stadium",
+        "is_correct": true,
+        "total_tokens": 2436,
+        "total_cost_usd": 0.000495,
+        "wall_time_ms": 7206.945645972155,
+        "parse_error": null
+      },
+      "token_reduction_pct": 16.74641148325359
+    },
+    {
+      "item_id": "longctx_qa/validation/cluster25",
+      "gold": "New Orleans",
+      "baseline": {
+        "predicted": "New Orleans",
+        "predicted_canonical": "new orleans",
+        "is_correct": true,
+        "total_tokens": 2959,
+        "total_cost_usd": 0.00059505,
+        "wall_time_ms": 8217.10668108426,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "New Orleans",
+        "predicted_canonical": "new orleans",
+        "is_correct": true,
+        "total_tokens": 2427,
+        "total_cost_usd": 0.0005022,
+        "wall_time_ms": 6856.419567018747,
+        "parse_error": null
+      },
+      "token_reduction_pct": 17.979046975329503
+    },
+    {
+      "item_id": "longctx_qa/validation/cluster26",
+      "gold": "Mercedes-Benz Superdome",
+      "baseline": {
+        "predicted": "Mercedes-Benz Superdome",
+        "predicted_canonical": "mercedes benz superdome",
+        "is_correct": true,
+        "total_tokens": 3272,
+        "total_cost_usd": 0.00062895,
+        "wall_time_ms": 8346.2079630699,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "Superdome",
+        "predicted_canonical": "superdome",
+        "is_correct": true,
+        "total_tokens": 2821,
+        "total_cost_usd": 0.00064725,
+        "wall_time_ms": 16458.019689074717,
+        "parse_error": null
+      },
+      "token_reduction_pct": 13.78361858190709
+    },
+    {
+      "item_id": "longctx_qa/validation/cluster27",
+      "gold": "2010",
+      "baseline": {
+        "predicted": "Super Bowl XLIV in 2010",
+        "predicted_canonical": "super bowl xliv in 2010",
+        "is_correct": true,
+        "total_tokens": 5039,
+        "total_cost_usd": 0.00089175,
+        "wall_time_ms": 7943.204121896997,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "Super Bowl XLIV in 2010",
+        "predicted_canonical": "super bowl xliv in 2010",
+        "is_correct": true,
+        "total_tokens": 4350,
+        "total_cost_usd": 0.0008154,
+        "wall_time_ms": 7986.835325951688,
+        "parse_error": null
+      },
+      "token_reduction_pct": 13.673347886485413
+    },
+    {
+      "item_id": "longctx_qa/validation/cluster28",
+      "gold": "May 3, 2013",
+      "baseline": {
+        "predicted": "May 3, 2013",
+        "predicted_canonical": "may 3 2013",
+        "is_correct": true,
+        "total_tokens": 5020,
+        "total_cost_usd": 0.000888,
+        "wall_time_ms": 7547.585477004759,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "May 3, 2013",
+        "predicted_canonical": "may 3 2013",
+        "is_correct": true,
+        "total_tokens": 4130,
+        "total_cost_usd": 0.0007504499999999999,
+        "wall_time_ms": 10955.5016400991,
+        "parse_error": null
+      },
+      "token_reduction_pct": 17.729083665338646
+    },
+    {
+      "item_id": "longctx_qa/validation/cluster29",
+      "gold": "Florida legislature",
+      "baseline": {
+        "predicted": "Florida legislature",
+        "predicted_canonical": "florida legislature",
+        "is_correct": true,
+        "total_tokens": 5301,
+        "total_cost_usd": 0.0009666,
+        "wall_time_ms": 10139.568601967767,
+        "parse_error": null
+      },
+      "optimized": {
+        "predicted": "Florida legislature",
+        "predicted_canonical": "florida legislature",
+        "is_correct": true,
+        "total_tokens": 4290,
+        "total_cost_usd": 0.0007906500000000001,
+        "wall_time_ms": 8198.348575038835,
+        "parse_error": null
+      },
+      "token_reduction_pct": 19.071873231465762
+    }
+  ]
+}
