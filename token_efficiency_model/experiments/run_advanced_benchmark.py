@@ -15,9 +15,10 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT.parent))
 
-from token_efficiency_model.combined_tactics import RLTokenOrchestrator, TokenEfficientPipeline
+from token_efficiency_model.combined_tactics import MoEPipeline, MoEOrchestrator, RLTokenOrchestrator
 from token_efficiency_model.combined_tactics.rl_orchestrator import RLStep
 from token_efficiency_model.common.metrics import quality_floor_penalty
+from token_efficiency_model.experts.gate import Gate
 from token_efficiency_model.experiments.advanced_test_data import AdvancedTestDataGenerator, ScenarioType
 
 
@@ -38,53 +39,61 @@ def compute_reward(
 def run_advanced_benchmark(episodes: int = 200, scenario_mix: str = "balanced"):
     """
     Run advanced benchmark with realistic scenarios
-    
+
     Args:
         episodes: Number of episodes to run
-        scenario_mix: "balanced" (all types), "complex" (hard scenarios), "stateful" (multi-turn focus)
+        scenario_mix: "balanced" (all types), "complex" (hard scenarios), "stateful" (multi-turn focus), "reasoning" (reasoning-focused)
     """
-    
+
     generator = AdvancedTestDataGenerator(seed=42)
-    orchestrator = RLTokenOrchestrator()
     persistence_file = ROOT / "experiments" / ".delta_memory_store_advanced.json"
-    pipeline = TokenEfficientPipeline(memory_persistence_path=str(persistence_file), quality_floor=0.98)
+    pipeline = MoEPipeline(memory_persistence_path=str(persistence_file), quality_floor=0.98)
 
-    # Setup scenario distribution based on mix
-    if scenario_mix == "complex":
-        scenario_distribution = {
-            ScenarioType.HIGH_COMPLEXITY_REASONING: 0.25,
-            ScenarioType.ADVERSARIAL_PRUNING: 0.25,
-            ScenarioType.CASCADING_DECISIONS: 0.20,
-            ScenarioType.DOMAIN_SPECIFIC: 0.15,
-            ScenarioType.MULTI_TURN_STATEFUL: 0.10,
-            ScenarioType.CROSS_TEAM_COMM: 0.05,
-        }
-    elif scenario_mix == "stateful":
-        scenario_distribution = {
-            ScenarioType.MULTI_TURN_STATEFUL: 0.50,
-            ScenarioType.CASCADING_DECISIONS: 0.15,
-            ScenarioType.EMERGENT_BEHAVIOR: 0.15,
-            ScenarioType.TIMESERIES_ANALYSIS: 0.10,
-            ScenarioType.DOMAIN_SPECIFIC: 0.10,
-        }
-    else:  # balanced
-        scenario_distribution = None  # Use default in generator
+    # Build per-expert action filters
+    EXPERT_IDS = ["operational", "math", "multihop", "logical", "planning", "swe", "research"]
+    seed_orchestrator = RLTokenOrchestrator()
+    action_filters = {eid: pipeline.expert_action_filter(eid, seed_orchestrator.actions) for eid in EXPERT_IDS}
+    orchestrator = MoEOrchestrator(EXPERT_IDS, action_filters=action_filters)
+    gate = Gate(mode="rule")
 
-    # Generate scenarios
-    scenarios = []
-    remaining = episodes
-    for scenario_type, proportion in (scenario_distribution or {}).items() if scenario_distribution else []:
-        count_for_type = int(episodes * proportion)
-        for _ in range(count_for_type):
-            scenarios.append(generator.generate_advanced_scenario(scenario_type))
-        remaining -= count_for_type
-    
-    # Fill remaining with balanced random scenarios
-    if remaining > 0:
-        for _ in range(remaining):
-            scenarios.append(generator.generate_advanced_scenario())
+    # Generate scenarios using the generator's workload method
+    if scenario_mix in ["complex", "stateful"]:
+        # Legacy support: complex and stateful use manual distribution
+        if scenario_mix == "complex":
+            scenario_distribution = {
+                ScenarioType.HIGH_COMPLEXITY_REASONING: 0.25,
+                ScenarioType.ADVERSARIAL_PRUNING: 0.25,
+                ScenarioType.CASCADING_DECISIONS: 0.20,
+                ScenarioType.DOMAIN_SPECIFIC: 0.15,
+                ScenarioType.MULTI_TURN_STATEFUL: 0.10,
+                ScenarioType.CROSS_TEAM_COMM: 0.05,
+            }
+        else:  # stateful
+            scenario_distribution = {
+                ScenarioType.MULTI_TURN_STATEFUL: 0.50,
+                ScenarioType.CASCADING_DECISIONS: 0.15,
+                ScenarioType.EMERGENT_BEHAVIOR: 0.15,
+                ScenarioType.TIMESERIES_ANALYSIS: 0.10,
+                ScenarioType.DOMAIN_SPECIFIC: 0.10,
+            }
 
-    # Track metrics by scenario type
+        scenarios = []
+        remaining = episodes
+        for scenario_type, proportion in scenario_distribution.items():
+            count_for_type = int(episodes * proportion)
+            for _ in range(count_for_type):
+                scenarios.append(generator.generate_advanced_scenario(scenario_type))
+            remaining -= count_for_type
+
+        # Fill remaining with balanced random scenarios
+        if remaining > 0:
+            for _ in range(remaining):
+                scenarios.append(generator.generate_advanced_scenario())
+    else:
+        # Use generate_workload for "balanced" and "reasoning" mixes
+        scenarios = generator.generate_workload(num_scenarios=episodes, mix=scenario_mix if scenario_mix != "balanced" else None)
+
+    # Track metrics by scenario type and expert
     metrics_by_scenario = defaultdict(lambda: {
         "rewards": [],
         "savings": [],
@@ -92,6 +101,11 @@ def run_advanced_benchmark(episodes: int = 200, scenario_mix: str = "balanced"):
         "tokens": [],
         "cache_hits": [],
         "rehydrations": [],
+    })
+
+    metrics_by_expert = defaultdict(lambda: {
+        "episodes": 0,
+        "rewards": [],
     })
     
     overall_metrics = {
@@ -115,10 +129,13 @@ def run_advanced_benchmark(episodes: int = 200, scenario_mix: str = "balanced"):
     
     for episode, task in enumerate(scenarios):
         scenario_type = task.get("scenario_type", "unknown")
-        
+
         prior_cache_hit = overall_metrics["cache_hit_rates"][-1] if overall_metrics["cache_hit_rates"] else 0.0
-        
-        state = orchestrator.discretize_state(
+
+        # Route task to expert
+        expert_id = gate.route(task)
+
+        state = orchestrator.tables[expert_id].discretize_state(
             task["complexity"],
             task["urgency"],
             task.get("context_load", 0.5),
@@ -127,6 +144,7 @@ def run_advanced_benchmark(episodes: int = 200, scenario_mix: str = "balanced"):
         )
 
         action_idx, config = orchestrator.select_action(
+            expert_id,
             state,
             explore=True,
             metrics={
@@ -134,7 +152,7 @@ def run_advanced_benchmark(episodes: int = 200, scenario_mix: str = "balanced"):
                 "savings": overall_metrics["savings"][-1] if overall_metrics["savings"] else 0.0,
             },
         )
-        
+
         result = pipeline.process_task(
             task_text=task["task_text"],
             incoming_messages=task["incoming_messages"],
@@ -148,6 +166,9 @@ def run_advanced_benchmark(episodes: int = 200, scenario_mix: str = "balanced"):
             delta_mode=config.delta_mode,
             delta_aggressiveness=config.delta_aggressiveness,
             wire_mode=config.wire_mode,
+            must_keep_facts=task.get("must_keep_facts"),
+            task_family=task.get("task_family"),
+            scenario_type=task["scenario_type"].value if hasattr(task.get("scenario_type"), "value") else task.get("scenario_type"),
         )
 
         reward = compute_reward(
@@ -160,14 +181,18 @@ def run_advanced_benchmark(episodes: int = 200, scenario_mix: str = "balanced"):
         )
 
         next_task = scenarios[episode + 1] if episode + 1 < len(scenarios) else task
-        next_state = orchestrator.discretize_state(
+        next_state = orchestrator.tables[expert_id].discretize_state(
             next_task["complexity"],
             next_task["urgency"],
             next_task.get("context_load", 0.5),
             cache_hit_rate=float(result.debug.get("cache_hit_rate", 0.0)),
             continuity=next_task.get("continuity", 0.5),
         )
-        orchestrator.update(RLStep(state=state, action_idx=action_idx, reward=reward, next_state=next_state))
+        orchestrator.update(expert_id, RLStep(state=state, action_idx=action_idx, reward=reward, next_state=next_state))
+
+        # Track per-expert metrics
+        metrics_by_expert[expert_id]["episodes"] += 1
+        metrics_by_expert[expert_id]["rewards"].append(reward)
 
         # Update overall metrics
         overall_metrics["rewards"].append(reward)
@@ -187,7 +212,7 @@ def run_advanced_benchmark(episodes: int = 200, scenario_mix: str = "balanced"):
             overall_metrics["sampling_effectiveness"].append(sampling_score)
         overall_metrics["diversity_scores"].append(float(sampling_debug.get("diversity_score", 0.0)))
         overall_metrics["novelty_gains"].append(float(sampling_debug.get("average_novelty_gain", 0.0)))
-        if orchestrator.last_selected_reason == "pareto_frontier":
+        if orchestrator.tables[expert_id].last_selected_reason == "pareto_frontier":
             overall_metrics["pareto_decisions"] += 1
 
         # Track by scenario type
@@ -235,18 +260,23 @@ def run_advanced_benchmark(episodes: int = 200, scenario_mix: str = "balanced"):
         print(f"    Cache Hit: {mean(metrics['cache_hits']):.3f}")
     
     print("\n" + "="*70)
-    print("Learned Optimal Policy (First 7 State-Action Pairs):")
+    print("Learned Optimal Policy by Expert:")
     print("-" * 70)
-    
-    shown = 0
-    for state, q_values in sorted(orchestrator.q_table.items())[:7]:
-        best_idx = int(q_values.argmax())
-        best = orchestrator.actions[best_idx]
-        print(f"\n  State={state}:")
-        print(f"    → compression={best.compression_level}, prune_budget={best.prune_budget}")
-        print(f"    → protocol={best.protocol_mode}, delta={best.delta_mode}")
-        print(f"    → aggressiveness={best.delta_aggressiveness}, wire={best.wire_mode}")
-        shown += 1
+
+    for expert_id in EXPERT_IDS:
+        expert_table = orchestrator.tables[expert_id]
+        if expert_table.q_table:
+            # Get first state-action pair for this expert
+            first_state = sorted(expert_table.q_table.keys())[0]
+            q_values = expert_table.q_table[first_state]
+            best_idx = int(q_values.argmax())
+            best = expert_table.actions[best_idx]
+            print(f"\n  {expert_id.upper()}:")
+            print(f"    Episodes: {metrics_by_expert[expert_id]['episodes']}")
+            print(f"    Best Action: compression={best.compression_level}, prune_budget={best.prune_budget}")
+            print(f"    → protocol={best.protocol_mode}, delta={best.delta_mode}")
+        else:
+            print(f"\n  {expert_id.upper()}: No episodes")
     
     print("\n" + "="*70)
     print(f"Key Insights:")
@@ -264,9 +294,9 @@ def parse_args():
     parser.add_argument("--episodes", type=int, default=200, help="Number of benchmark episodes")
     parser.add_argument(
         "--scenario-mix",
-        choices=["balanced", "complex", "stateful"],
+        choices=["balanced", "complex", "stateful", "reasoning"],
         default="balanced",
-        help="Scenario distribution: balanced (all types), complex (hard scenarios), stateful (multi-turn)"
+        help="Scenario distribution: balanced (all types), complex (hard scenarios), stateful (multi-turn), reasoning (reasoning-focused)"
     )
     return parser.parse_args()
 

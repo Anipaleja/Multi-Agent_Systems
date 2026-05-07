@@ -20,14 +20,14 @@ TOKEN_MODEL_ROOT = WORKSPACE_ROOT / "token_efficiency_model"
 if str(WORKSPACE_ROOT) not in sys.path:
     sys.path.insert(0, str(WORKSPACE_ROOT))
 
-from token_efficiency_model.combined_tactics import TokenEfficientPipeline
+from token_efficiency_model.combined_tactics import TokenEfficientPipeline, MoEPipeline
 from token_efficiency_model.common.metrics import estimate_tokens
 
 app = Flask(__name__)
 CORS(app)
 
 # Local optimization pipeline from token_efficiency_model.
-pipeline = TokenEfficientPipeline(quality_floor=0.98)
+pipeline = MoEPipeline(quality_floor=0.98)
 
 OLLAMA_BASE_URL = os.environ.get("OLLAMA_BASE_URL", "http://127.0.0.1:11434")
 # Installed local Ollama tags from `ollama list`.
@@ -293,16 +293,19 @@ def list_models():
 def optimize_context():
     """
     Optimize a task's context and return token comparison
-    
+
     Request body:
     {
         "task_text": "The main task...",
         "incoming_messages": ["msg1", "msg2", ...],
         "prior_context": ["ctx1", "ctx2", ...],
         "complexity": 0.5,
-        "urgency": 0.5
+        "urgency": 0.5,
+        "must_keep_facts": ["fact1", "fact2"],  # optional (MoE)
+        "task_family": "math",                   # optional (MoE)
+        "scenario_type": "planning"              # optional (MoE)
     }
-    
+
     Response:
     {
         "baseline_tokens": 1024,
@@ -310,23 +313,29 @@ def optimize_context():
         "savings_pct": 25.0,
         "quality_proxy": 0.99,
         "compressed_payload": "...",
-        "debug": {...}
+        "debug": {..., "expert_id": "math", "must_keep_recall": 0.95}
     }
     """
     try:
         data = request.json
-        
+
         task_text = data.get('task_text', '')
         incoming_messages = data.get('incoming_messages', [])
         prior_context = data.get('prior_context', [])
         complexity = data.get('complexity', 0.5)
         urgency = data.get('urgency', 0.5)
-        
+        must_keep_facts = data.get('must_keep_facts')
+        task_family = data.get('task_family')
+        scenario_type = data.get('scenario_type')
+
         # Run through optimization pipeline
         result = pipeline.process_task(
             task_text=task_text,
             incoming_messages=incoming_messages,
             prior_context=prior_context,
+            must_keep_facts=must_keep_facts,
+            task_family=task_family,
+            scenario_type=scenario_type,
             task_id="api-request",
             complexity=complexity,
             urgency=urgency,
@@ -334,7 +343,20 @@ def optimize_context():
             prune_budget=5,
             protocol_mode="compact",
         )
-        
+
+        debug_output = {
+            "compression_stats": result.debug.get("compression", {}),
+            "sampling_stats": result.debug.get("adaptive_sampling", {}),
+            "cache_hit_rate": result.debug.get("cache_hit_rate", 0),
+            "rehydration_events": result.debug.get("rehydration_events", 0),
+        }
+
+        # Add MoE-specific fields if available
+        if "expert_id" in result.debug:
+            debug_output["expert_id"] = result.debug.get("expert_id")
+        if "must_keep_recall" in result.debug:
+            debug_output["must_keep_recall"] = result.debug.get("must_keep_recall")
+
         return jsonify({
             "success": True,
             "baseline_tokens": result.baseline_tokens,
@@ -344,12 +366,7 @@ def optimize_context():
             "quality_proxy": result.quality_proxy,
             "routed_model": result.routed_model,
             "compressed_payload": result.protocol_payload[:200] + "..." if len(result.protocol_payload) > 200 else result.protocol_payload,
-            "debug": {
-                "compression_stats": result.debug.get("compression", {}),
-                "sampling_stats": result.debug.get("adaptive_sampling", {}),
-                "cache_hit_rate": result.debug.get("cache_hit_rate", 0),
-                "rehydration_events": result.debug.get("rehydration_events", 0),
-            }
+            "debug": debug_output
         })
     except Exception as e:
         return jsonify({
