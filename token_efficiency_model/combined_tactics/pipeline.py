@@ -83,6 +83,8 @@ class TokenEfficientPipeline:
         delta_mode: str = "off",
         delta_aggressiveness: int = 1,
         wire_mode: str = "json",
+        *,
+        must_keep_facts: Optional[List[str]] = None,
     ) -> PipelineResult:
         packet = TaskPacket(
             task_id=task_id,
@@ -100,6 +102,7 @@ class TokenEfficientPipeline:
             delta_mode=delta_mode,
             delta_aggressiveness=delta_aggressiveness,
             wire_mode=wire_mode,
+            must_keep_facts=must_keep_facts,
         )
 
     def _build_state_values(
@@ -127,6 +130,7 @@ class TokenEfficientPipeline:
         delta_mode: str = "off",
         delta_aggressiveness: int = 1,
         wire_mode: str = "json",
+        must_keep_facts: Optional[List[str]] = None,
     ) -> PipelineResult:
         baseline_tokens = estimate_tokens(packet.task_text)
         baseline_tokens += estimate_tokens_many(packet.incoming_messages)
@@ -282,5 +286,8 @@ class TokenEfficientPipeline:
                 "wire_mode": wire_mode,
                 "state_id": new_state_id,
                 "base_state_id": base_state_id,
+                "pruned_context": pruned_context,
+                "compressed_messages": compressed_messages,
+                "inline_chunks": inline_chunks,
             },
         )
