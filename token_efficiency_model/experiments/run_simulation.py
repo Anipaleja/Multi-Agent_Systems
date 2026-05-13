@@ -61,10 +61,16 @@ def compute_reward(
     return base + token_bonus + continuity_bonus - quality_floor_penalty(quality_proxy, floor=floor)
 
 
-def run(episodes: int):
+def run(episodes: int, savings_target: float = 70.0, max_tuning: int = 3, do_plot: bool = False):
     orchestrator = RLTokenOrchestrator()
     persistence_file = ROOT / "experiments" / ".delta_memory_store.json"
-    pipeline = TokenEfficientPipeline(memory_persistence_path=str(persistence_file), quality_floor=0.98)
+    # Enable tuning to try to reach 70% savings target by default
+    pipeline = TokenEfficientPipeline(
+        memory_persistence_path=str(persistence_file),
+        quality_floor=0.98,
+        savings_target=savings_target,
+        max_tuning_attempts=max_tuning,
+    )
 
     rewards = []
     savings = []
@@ -158,6 +164,16 @@ def run(episodes: int):
     print(f"Avg Novelty Gain: {mean(novelty_gains):.3f}")
     print(f"Pareto Frontier Decisions: {pareto_decisions}/{episodes}")
 
+    # Optional plotting / telemetry
+    if do_plot:
+        try:
+            from token_efficiency_model.experiments.telemetry import plot_savings
+            episodes_range = list(range(1, episodes + 1))
+            plot_savings(episodes_range, savings, str(ROOT / "experiments" / "metrics.png"))
+            print("Saved plot to experiments/metrics.png")
+        except Exception:
+            print("Plotting failed or matplotlib not installed; metrics CSV not saved.")
+
     print("\nSample learned policy (first 5 states):")
     shown = 0
     for state, q_values in orchestrator.q_table.items():
@@ -176,9 +192,12 @@ def run(episodes: int):
 def parse_args():
     parser = argparse.ArgumentParser(description="Train and evaluate token-efficiency RL orchestrator")
     parser.add_argument("--episodes", type=int, default=200, help="Number of RL episodes")
+    parser.add_argument("--savings-target", type=float, default=70.0, help="Savings target percentage for pipeline tuning")
+    parser.add_argument("--max-tuning", type=int, default=3, help="Max tuning attempts per task")
+    parser.add_argument("--plot", action="store_true", help="Save a simple savings plot to experiments/metrics.png")
     return parser.parse_args()
 
 
 if __name__ == "__main__":
     args = parse_args()
-    run(args.episodes)
+    run(args.episodes, savings_target=args.savings_target, max_tuning=args.max_tuning, do_plot=args.plot)

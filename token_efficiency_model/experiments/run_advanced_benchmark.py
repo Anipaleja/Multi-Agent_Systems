@@ -36,7 +36,7 @@ def compute_reward(
     return base + token_bonus + continuity_bonus - quality_floor_penalty(quality_proxy, floor=floor)
 
 
-def run_advanced_benchmark(episodes: int = 200, scenario_mix: str = "balanced"):
+def run_advanced_benchmark(episodes: int = 200, scenario_mix: str = "balanced", savings_target: float = 70.0, max_tuning: int = 3, do_plot: bool = False):
     """
     Run advanced benchmark with realistic scenarios
 
@@ -47,7 +47,12 @@ def run_advanced_benchmark(episodes: int = 200, scenario_mix: str = "balanced"):
 
     generator = AdvancedTestDataGenerator(seed=42)
     persistence_file = ROOT / "experiments" / ".delta_memory_store_advanced.json"
-    pipeline = MoEPipeline(memory_persistence_path=str(persistence_file), quality_floor=0.98)
+    pipeline = MoEPipeline(
+        memory_persistence_path=str(persistence_file),
+        quality_floor=0.98,
+        savings_target=savings_target,
+        max_tuning_attempts=max_tuning,
+    )
 
     # Build per-expert action filters
     EXPERT_IDS = ["operational", "math", "multihop", "logical", "planning", "swe", "research"]
@@ -298,9 +303,18 @@ def parse_args():
         default="balanced",
         help="Scenario distribution: balanced (all types), complex (hard scenarios), stateful (multi-turn), reasoning (reasoning-focused)"
     )
+    parser.add_argument("--savings-target", type=float, default=70.0, help="Savings target percentage for pipeline tuning")
+    parser.add_argument("--max-tuning", type=int, default=3, help="Max tuning attempts per task")
+    parser.add_argument("--plot", action="store_true", help="Save a simple savings plot to experiments/metrics_advanced.png")
     return parser.parse_args()
 
 
 if __name__ == "__main__":
     args = parse_args()
-    metrics = run_advanced_benchmark(episodes=args.episodes, scenario_mix=args.scenario_mix)
+    metrics = run_advanced_benchmark(
+        episodes=args.episodes,
+        scenario_mix=args.scenario_mix,
+        savings_target=args.savings_target,
+        max_tuning=args.max_tuning,
+        do_plot=args.plot,
+    )

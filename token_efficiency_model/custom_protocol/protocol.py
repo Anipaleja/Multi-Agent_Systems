@@ -24,12 +24,21 @@ class AgentProtocol:
         if mode == "raw-json":
             serialized = json.dumps(payload, separators=(",", ":"), ensure_ascii=False)
             return self._to_wire(serialized, wire_mode)
-
         compact = {}
         for key, value in payload.items():
             mapped = self.FIELD_MAP.get(key, key)
             compact[mapped] = value
         serialized = json.dumps(compact, separators=(",", ":"), ensure_ascii=False)
+
+        # For human-consumable prompts, add a short readable header to guide model behavior
+        if wire_mode != "binary":
+            header = (
+                "### TOKEN-EFFICIENT PAYLOAD ###\n"
+                "# compact fields: t=task_id, m=model, s=summary, c=context_refs, i=instructions, p=priority\n"
+                "# b=base_state_id, d=delta_ops, a=ack_id, r=rehydrate_policy, w=wire_mode, x=is_delta\n"
+            )
+            return header + serialized
+
         return self._to_wire(serialized, wire_mode)
 
     def _to_wire(self, serialized: str, wire_mode: str) -> str:

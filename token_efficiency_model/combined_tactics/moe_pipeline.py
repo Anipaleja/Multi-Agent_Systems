@@ -21,11 +21,15 @@ class MoEPipeline:
     """
 
     def __init__(self, model_backend=None, memory_persistence_path: str = "",
-                 quality_floor: float = 0.98):
+                 quality_floor: float = 0.98,
+                 savings_target: float = 70.0,
+                 max_tuning_attempts: int = 3):
         self.shared = TokenEfficientPipeline(
             model_backend=model_backend,
             memory_persistence_path=memory_persistence_path,
             quality_floor=quality_floor,
+            savings_target=savings_target,
+            max_tuning_attempts=max_tuning_attempts,
         )
         self.experts = {
             "operational": OperationalExpert(self.shared),

@@ -30,12 +30,12 @@ class AdaptiveSemanticSampler:
     """
     
     def __init__(self, 
-                 budget: int = 5,
+                 budget: int = 4,
                  relevance_weight: float = 0.35,
                  frequency_weight: float = 0.25,
                  recency_weight: float = 0.20,
                  entropy_weight: float = 0.20,
-                 novelty_weight: float = 0.30):
+                 novelty_weight: float = 0.40):
         self.budget = budget
         self.relevance_weight = relevance_weight
         self.frequency_weight = frequency_weight
