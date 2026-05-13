@@ -82,8 +82,10 @@ def run(episodes: int, savings_target: float = 70.0, max_tuning: int = 3, do_plo
     diversity_scores = []
     novelty_gains = []
     pareto_decisions = 0
+    episodes_axis = []
 
     for episode in range(episodes):
+        episodes_axis.append(episode + 1)
         thread_id = max(1, episode // 4)
         task = synthetic_task(episode, thread_id=thread_id)
         prior_cache_hit = cache_hit_rates[-1] if cache_hit_rates else 0.0
@@ -165,11 +167,32 @@ def run(episodes: int, savings_target: float = 70.0, max_tuning: int = 3, do_plo
     print(f"Pareto Frontier Decisions: {pareto_decisions}/{episodes}")
 
     # Optional plotting / telemetry
+    telemetry_dir = ROOT / "experiments"
+    try:
+        from token_efficiency_model.experiments.telemetry import save_metrics_csv
+        save_metrics_csv(
+            str(telemetry_dir / "metrics_simulation.csv"),
+            episodes_axis,
+            {
+                "reward": rewards,
+                "savings_pct": savings,
+                "quality_proxy": quality_scores,
+                "steady_state_tokens": steady_state_tokens,
+                "cold_start_tokens": cold_start_tokens,
+                "cache_hit_rate": cache_hit_rates,
+                "rehydration_events": rehydration_events,
+                "diversity_score": diversity_scores,
+                "novelty_gain": novelty_gains,
+            },
+        )
+        print("Saved telemetry CSV to experiments/metrics_simulation.csv")
+    except Exception:
+        print("Telemetry CSV could not be written.")
+
     if do_plot:
         try:
             from token_efficiency_model.experiments.telemetry import plot_savings
-            episodes_range = list(range(1, episodes + 1))
-            plot_savings(episodes_range, savings, str(ROOT / "experiments" / "metrics.png"))
+            plot_savings(episodes_axis, savings, str(telemetry_dir / "metrics.png"))
             print("Saved plot to experiments/metrics.png")
         except Exception:
             print("Plotting failed or matplotlib not installed; metrics CSV not saved.")
