@@ -1,0 +1,17 @@
+site_name: Multi-Agent Systems
+site_description: Documentation for the Multi-Agent Systems repository
+site_url: ""
+repo_name: Multi-Agent_Systems
+repo_url: ""
+theme:
+  name: material
+nav:
+  - Home: index.md
+  - Quick Start: quick-start.md
+  - Evaluation Framework: evaluation.md
+  - Token Efficiency Model: token-efficiency-model.md
+  - Default Testing App: default-testing.md
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
