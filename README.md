@@ -28,8 +28,8 @@ See [default_testing/README.md](./default_testing/README.md) for detailed docume
 This repository demonstrates the core challenges in multi-agent systems, particularly:
 - Token inefficiency when agents re-ingest each other's outputs
 - Communication patterns between sequential agents
-- Real-world cost implications of redundant context in production systems
+- Cost implications of redundant context in production systems
 
 ## What This Demonstrates
 
-The testing environment shows that in a typical sequential agent chain, the majority of tokens consumed are **redundant** — previous agents' outputs being re-sent verbatim to downstream agents. This redundancy represents significant API costs in production systems.
+The testing environment shows that in a typical sequential agent chain, the majority of tokens consumed are **redundant** previous agents' outputs being re-sent verbatim to downstream agents. This redundancy represents significant API costs in production systems.
