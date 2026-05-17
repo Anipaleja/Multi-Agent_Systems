@@ -1,6 +1,6 @@
-# Multi-Agent Systems
+# Multi-Agent Systems (Brevitas)
 
-A repository for exploring and demonstrating multi-agent AI systems, communication patterns, and token efficiency analysis.
+A repository for exploring and demonstrating multi-agent AI systems, communication patterns, and token efficiency analysis while retaining prompt accuracy.
 
 ## Projects
 
