@@ -1,4 +1,4 @@
-# Multi-Agent Systems
+# Multi-Agent Systems (Brevitas)
 
 A focused toolkit and collection of experiments for researching multi-agent AI systems, communication protocols, and token-efficiency techniques.
 
