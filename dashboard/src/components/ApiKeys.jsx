@@ -6,7 +6,7 @@ function CopyButton({ text, small = false }) {
   return (
     <button
       onClick={copy}
-      className={`border border-brand-border hover:border-brand-blue text-brand-muted hover:text-brand-blue rounded-xl transition-colors font-mono ${
+      className={`border border-brand-border dark:border-brand-dark-border hover:border-brand-blue text-brand-muted dark:text-brand-dark-muted hover:text-brand-blue rounded-xl transition-colors font-mono ${
         small ? 'px-3 py-1.5 text-xs' : 'px-4 py-2 text-sm'
       }`}
     >
@@ -63,16 +63,16 @@ export default function ApiKeys({ apiKey }) {
       {/* ── Header ── */}
       <div>
         <p className="annotation tracking-widest uppercase mb-4">Key Management</p>
-        <h2 className="font-serif text-4xl text-brand-navy">
+        <h2 className="font-serif text-4xl text-brand-navy dark:text-brand-dark-navy">
           Your <em className="italic text-brand-blue">API keys.</em>
         </h2>
-        <p className="text-brand-muted text-sm mt-3 leading-relaxed">
+        <p className="text-brand-muted dark:text-brand-dark-muted text-sm mt-3 leading-relaxed">
           Each key scopes its own pipeline state, usage stats, and shared memory layer.
         </p>
       </div>
 
       {/* ── Create ── */}
-      <div className="bg-white rounded-2xl border border-brand-border p-7 space-y-4">
+      <div className="bg-white dark:bg-brand-dark-surface rounded-2xl border border-brand-border dark:border-brand-dark-border p-7 space-y-4">
         <p className="annotation">// create a new key</p>
         <div className="flex gap-3">
           <input
@@ -80,7 +80,7 @@ export default function ApiKeys({ apiKey }) {
             onChange={e => setName(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && create()}
             placeholder="Project name"
-            className="flex-1 bg-brand-bg border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-navy placeholder-brand-muted focus:outline-none focus:border-brand-blue transition-colors"
+            className="flex-1 bg-brand-bg dark:bg-brand-dark-bg border border-brand-border dark:border-brand-dark-border rounded-xl px-4 py-3 text-sm text-brand-navy dark:text-brand-dark-navy placeholder-brand-muted dark:placeholder-brand-dark-muted focus:outline-none focus:border-brand-blue transition-colors"
           />
           <button
             onClick={create}
@@ -92,7 +92,7 @@ export default function ApiKeys({ apiKey }) {
         </div>
 
         {newKey && (
-          <div className="bg-brand-teal-dim border border-brand-teal/30 rounded-xl p-4">
+          <div className="bg-brand-teal-dim dark:bg-brand-dark-teal-dim border border-brand-teal/30 rounded-xl p-4">
             <p className="annotation text-brand-teal mb-2">// shown once — copy now</p>
             <div className="flex items-center gap-3">
               <code className="flex-1 text-xs font-mono text-brand-teal break-all">{newKey}</code>
@@ -108,7 +108,7 @@ export default function ApiKeys({ apiKey }) {
       <div className="space-y-3">
         <div className="flex items-center gap-4">
           <p className="annotation tracking-widest uppercase shrink-0">Existing Keys</p>
-          <div className="flex-1 h-px bg-brand-border" />
+          <div className="flex-1 h-px bg-brand-border dark:bg-brand-dark-border" />
         </div>
 
         {keys.length === 0 ? (
@@ -118,10 +118,10 @@ export default function ApiKeys({ apiKey }) {
             {keys.map((k, i) => (
               <div
                 key={i}
-                className="bg-white border border-brand-border rounded-xl px-5 py-4 flex items-center justify-between"
+                className="bg-white dark:bg-brand-dark-surface border border-brand-border dark:border-brand-dark-border rounded-xl px-5 py-4 flex items-center justify-between"
               >
                 <div>
-                  <p className="text-sm font-medium text-brand-navy">{k.name}</p>
+                  <p className="text-sm font-medium text-brand-navy dark:text-brand-dark-navy">{k.name}</p>
                   <p className="annotation mt-0.5">
                     // created {new Date(k.created).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
                   </p>
@@ -136,10 +136,10 @@ export default function ApiKeys({ apiKey }) {
       <div className="space-y-3">
         <div className="flex items-center gap-4">
           <p className="annotation tracking-widest uppercase shrink-0">Active Key</p>
-          <div className="flex-1 h-px bg-brand-border" />
+          <div className="flex-1 h-px bg-brand-border dark:bg-brand-dark-border" />
         </div>
-        <div className="bg-white border border-brand-border rounded-xl px-5 py-4 flex items-center gap-3">
-          <code className="flex-1 text-xs font-mono text-brand-muted truncate">{apiKey}</code>
+        <div className="bg-white dark:bg-brand-dark-surface border border-brand-border dark:border-brand-dark-border rounded-xl px-5 py-4 flex items-center gap-3">
+          <code className="flex-1 text-xs font-mono text-brand-muted dark:text-brand-dark-muted truncate">{apiKey}</code>
           <CopyButton text={apiKey} small />
         </div>
       </div>
@@ -148,22 +148,22 @@ export default function ApiKeys({ apiKey }) {
       <div className="space-y-4">
         <div className="flex items-center gap-4">
           <p className="annotation tracking-widest uppercase shrink-0">API Reference</p>
-          <div className="flex-1 h-px bg-brand-border" />
+          <div className="flex-1 h-px bg-brand-border dark:bg-brand-dark-border" />
         </div>
-        <div className="bg-white rounded-2xl border border-brand-border p-6 space-y-3">
+        <div className="bg-white dark:bg-brand-dark-surface rounded-2xl border border-brand-border dark:border-brand-dark-border p-6 space-y-3">
           {ENDPOINTS.map(([method, path, desc]) => (
             <div key={path} className="flex items-start gap-4">
               <span
                 className={`shrink-0 font-mono text-[10px] tracking-wide px-2 py-1 rounded-lg font-medium ${
                   method === 'POST'
-                    ? 'bg-brand-blue-dim text-brand-blue'
-                    : 'bg-brand-teal-dim text-brand-teal'
+                    ? 'bg-brand-blue-dim dark:bg-brand-dark-blue-dim text-brand-blue'
+                    : 'bg-brand-teal-dim dark:bg-brand-dark-teal-dim text-brand-teal'
                 }`}
               >
                 {method}
               </span>
               <div>
-                <p className="font-mono text-xs text-brand-navy">{path}</p>
+                <p className="font-mono text-xs text-brand-navy dark:text-brand-dark-navy">{path}</p>
                 <p className="annotation mt-0.5">// {desc}</p>
               </div>
             </div>

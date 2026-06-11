@@ -37,6 +37,10 @@ class CommunicationCompressor:
         # cluster sentences by lexical overlap and collapse clusters
         clusters = []  # list of lists of sentences
         used = set()
+        # Thresholds tuned so near-duplicate sentences (same meaning, different phrasing)
+        # get collapsed. Lower = more aggressive clustering.
+        threshold = {1: 0.50, 2: 0.28, 3: 0.20}.get(self.level, 0.28)
+
         for i, s in enumerate(all_sentences):
             if i in used:
                 continue
@@ -46,8 +50,6 @@ class CommunicationCompressor:
                 if j in used:
                     continue
                 sim = lexical_overlap(s, all_sentences[j])
-                # cluster threshold tuned by level
-                threshold = 0.45 if self.level >= 2 else 0.6
                 if sim >= threshold:
                     cluster.append(all_sentences[j])
                     used.add(j)
@@ -78,23 +80,10 @@ class CommunicationCompressor:
                 removed += len(cluster) - 1
                 continue
 
-            # otherwise create a compact summary using top tokens from cluster
-            token_counts = Counter()
-            for s in cluster:
-                for w in [w.lower() for w in s.split() if len(w) > 3]:
-                    token_counts[w] += 1
-            top = [w for w, _ in token_counts.most_common(4)]
-            summary = "; ".join(top) if top else cluster[0]
-
-            # stronger compression at higher levels
-            if self.level >= 3:
-                # pick the most representative sentence (longest) to maximize info density
-                rep = max(cluster, key=lambda x: len(x))
-                output.append(rep)
-                removed += len(cluster) - 1
-            else:
-                output.append(summary)
-                removed += len(cluster) - 1
+            # Pick the most informative sentence: longest one (highest information density)
+            rep = max(cluster, key=lambda x: len(x))
+            output.append(rep)
+            removed += len(cluster) - 1
 
         compressed_tokens = estimate_tokens_many(output)
         stats = CompressionStats(

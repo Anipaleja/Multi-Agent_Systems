@@ -33,6 +33,14 @@ class UsageStore:
                     quality_proxy    REAL NOT NULL
                 )
             """)
+            db.execute("""
+                CREATE TABLE IF NOT EXISTS provider_config (
+                    key_hash         TEXT PRIMARY KEY,
+                    provider         TEXT NOT NULL DEFAULT 'ollama',
+                    provider_api_key TEXT NOT NULL DEFAULT '',
+                    model            TEXT NOT NULL DEFAULT 'llama3.2'
+                )
+            """)
 
     def create_key(self, key_hash: str, name: str) -> None:
         with self._conn() as db:
@@ -76,6 +84,30 @@ class UsageStore:
                     round(quality_proxy, 6),
                 ),
             )
+
+    def set_provider_config(self, key_hash: str, provider: str, provider_api_key: str, model: str) -> None:
+        with self._conn() as db:
+            db.execute(
+                """
+                INSERT INTO provider_config (key_hash, provider, provider_api_key, model)
+                VALUES (?, ?, ?, ?)
+                ON CONFLICT(key_hash) DO UPDATE SET
+                    provider         = excluded.provider,
+                    provider_api_key = excluded.provider_api_key,
+                    model            = excluded.model
+                """,
+                (key_hash, provider, provider_api_key, model),
+            )
+
+    def get_provider_config(self, key_hash: str) -> dict | None:
+        with self._conn() as db:
+            row = db.execute(
+                "SELECT provider, provider_api_key, model FROM provider_config WHERE key_hash = ?",
+                (key_hash,),
+            ).fetchone()
+        if row is None:
+            return None
+        return {"provider": row[0], "provider_api_key": row[1], "model": row[2]}
 
     def get_stats(self, key_hash: str) -> dict:
         with self._conn() as db:
