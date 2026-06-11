@@ -1,21 +1,26 @@
 import { useState, useEffect } from 'react'
 
-function CopyButton({ text }) {
+function CopyButton({ text, small = false }) {
   const [copied, setCopied] = useState(false)
-  const copy = () => {
-    navigator.clipboard.writeText(text)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
+  const copy = () => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000) }
   return (
     <button
       onClick={copy}
-      className="shrink-0 bg-slate-700 hover:bg-slate-600 rounded px-3 py-1.5 text-xs transition-colors"
+      className={`border border-brand-border hover:border-brand-blue text-brand-muted hover:text-brand-blue rounded-xl transition-colors font-mono ${
+        small ? 'px-3 py-1.5 text-xs' : 'px-4 py-2 text-sm'
+      }`}
     >
-      {copied ? 'Copied!' : 'Copy'}
+      {copied ? 'copied!' : 'copy'}
     </button>
   )
 }
+
+const ENDPOINTS = [
+  ['POST', '/v1/compress', 'compress messages + prune context'],
+  ['GET',  '/v1/stats',    'usage stats for this key'],
+  ['POST', '/v1/keys',     'create a new api key'],
+  ['GET',  '/v1/health',   'server health check'],
+]
 
 export default function ApiKeys({ apiKey }) {
   const [keys, setKeys]       = useState([])
@@ -34,9 +39,7 @@ export default function ApiKeys({ apiKey }) {
   useEffect(() => { loadKeys() }, [apiKey])
 
   const create = async () => {
-    setLoading(true)
-    setError('')
-    setNewKey('')
+    setLoading(true); setError(''); setNewKey('')
     try {
       const res = await fetch('/v1/keys', {
         method: 'POST',
@@ -56,59 +59,71 @@ export default function ApiKeys({ apiKey }) {
   }
 
   return (
-    <div className="max-w-2xl space-y-5">
-      <h2 className="font-semibold">API Keys</h2>
+    <div className="max-w-2xl space-y-14">
+      {/* ── Header ── */}
+      <div>
+        <p className="annotation tracking-widest uppercase mb-4">Key Management</p>
+        <h2 className="font-serif text-4xl text-brand-navy">
+          Your <em className="italic text-brand-blue">API keys.</em>
+        </h2>
+        <p className="text-brand-muted text-sm mt-3 leading-relaxed">
+          Each key scopes its own pipeline state, usage stats, and shared memory layer.
+        </p>
+      </div>
 
-      {/* Create */}
-      <div className="bg-slate-900 rounded-xl border border-slate-800 p-5">
-        <h3 className="text-sm font-medium mb-3">Create a new key</h3>
+      {/* ── Create ── */}
+      <div className="bg-white rounded-2xl border border-brand-border p-7 space-y-4">
+        <p className="annotation">// create a new key</p>
         <div className="flex gap-3">
           <input
             value={name}
             onChange={e => setName(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && create()}
             placeholder="Project name"
-            className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-sm placeholder-slate-500 focus:outline-none focus:border-violet-500 transition-colors"
+            className="flex-1 bg-brand-bg border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-navy placeholder-brand-muted focus:outline-none focus:border-brand-blue transition-colors"
           />
           <button
             onClick={create}
             disabled={loading}
-            className="bg-violet-600 hover:bg-violet-500 disabled:opacity-50 rounded-lg px-5 py-2.5 text-sm font-medium transition-colors whitespace-nowrap"
+            className="bg-brand-blue hover:bg-brand-navy disabled:opacity-50 text-white rounded-xl px-5 py-3 text-sm font-medium transition-colors whitespace-nowrap"
           >
-            {loading ? 'Creating…' : 'Create'}
+            {loading ? 'Creating…' : 'Create →'}
           </button>
         </div>
 
         {newKey && (
-          <div className="mt-3 bg-emerald-950 border border-emerald-800 rounded-lg p-4">
-            <p className="text-xs text-emerald-400 mb-2">
-              New key created — copy it now, it won't be shown again.
-            </p>
-            <div className="flex items-center gap-2">
-              <code className="flex-1 text-xs font-mono text-emerald-300 break-all">{newKey}</code>
-              <CopyButton text={newKey} />
+          <div className="bg-brand-teal-dim border border-brand-teal/30 rounded-xl p-4">
+            <p className="annotation text-brand-teal mb-2">// shown once — copy now</p>
+            <div className="flex items-center gap-3">
+              <code className="flex-1 text-xs font-mono text-brand-teal break-all">{newKey}</code>
+              <CopyButton text={newKey} small />
             </div>
           </div>
         )}
 
-        {error && <p className="mt-2 text-red-400 text-xs">{error}</p>}
+        {error && <p className="font-mono text-xs text-red-500">{error}</p>}
       </div>
 
-      {/* Existing keys */}
-      <div className="bg-slate-900 rounded-xl border border-slate-800 p-5">
-        <h3 className="text-sm font-medium mb-3">Existing keys</h3>
+      {/* ── Existing keys ── */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-4">
+          <p className="annotation tracking-widest uppercase shrink-0">Existing Keys</p>
+          <div className="flex-1 h-px bg-brand-border" />
+        </div>
+
         {keys.length === 0 ? (
-          <p className="text-slate-500 text-sm">No keys yet.</p>
+          <p className="annotation">// no keys yet</p>
         ) : (
           <div className="space-y-2">
             {keys.map((k, i) => (
-              <div key={i} className="flex items-center justify-between bg-slate-800 rounded-lg px-4 py-3">
+              <div
+                key={i}
+                className="bg-white border border-brand-border rounded-xl px-5 py-4 flex items-center justify-between"
+              >
                 <div>
-                  <p className="text-sm font-medium">{k.name}</p>
-                  <p className="text-xs text-slate-500">
-                    Created {new Date(k.created).toLocaleDateString('en-US', {
-                      year: 'numeric', month: 'short', day: 'numeric',
-                    })}
+                  <p className="text-sm font-medium text-brand-navy">{k.name}</p>
+                  <p className="annotation mt-0.5">
+                    // created {new Date(k.created).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
                   </p>
                 </div>
               </div>
@@ -117,33 +132,40 @@ export default function ApiKeys({ apiKey }) {
         )}
       </div>
 
-      {/* Current key */}
-      <div className="bg-slate-900 rounded-xl border border-slate-800 p-5">
-        <h3 className="text-sm font-medium mb-3">Active session key</h3>
-        <div className="flex items-center gap-2 bg-slate-800 rounded-lg px-4 py-3">
-          <code className="flex-1 text-xs font-mono text-slate-400 truncate">{apiKey}</code>
-          <CopyButton text={apiKey} />
+      {/* ── Active session key ── */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-4">
+          <p className="annotation tracking-widest uppercase shrink-0">Active Key</p>
+          <div className="flex-1 h-px bg-brand-border" />
+        </div>
+        <div className="bg-white border border-brand-border rounded-xl px-5 py-4 flex items-center gap-3">
+          <code className="flex-1 text-xs font-mono text-brand-muted truncate">{apiKey}</code>
+          <CopyButton text={apiKey} small />
         </div>
       </div>
 
-      {/* Quick reference */}
-      <div className="bg-slate-900 rounded-xl border border-slate-800 p-5 space-y-3">
-        <h3 className="text-sm font-medium">API Reference</h3>
-        <div className="space-y-2 text-xs font-mono">
-          {[
-            ['POST', '/v1/compress', 'Compress messages + context'],
-            ['GET',  '/v1/stats',    'Usage stats for this key'],
-            ['POST', '/v1/keys',     'Create a new API key'],
-            ['GET',  '/v1/health',   'Server health check'],
-          ].map(([method, path, desc]) => (
-            <div key={path} className="flex items-center gap-3 text-slate-400">
-              <span className={`w-10 text-center rounded px-1 py-0.5 text-xs font-bold ${
-                method === 'POST' ? 'bg-violet-900 text-violet-300' : 'bg-sky-900 text-sky-300'
-              }`}>
+      {/* ── API Reference ── */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-4">
+          <p className="annotation tracking-widest uppercase shrink-0">API Reference</p>
+          <div className="flex-1 h-px bg-brand-border" />
+        </div>
+        <div className="bg-white rounded-2xl border border-brand-border p-6 space-y-3">
+          {ENDPOINTS.map(([method, path, desc]) => (
+            <div key={path} className="flex items-start gap-4">
+              <span
+                className={`shrink-0 font-mono text-[10px] tracking-wide px-2 py-1 rounded-lg font-medium ${
+                  method === 'POST'
+                    ? 'bg-brand-blue-dim text-brand-blue'
+                    : 'bg-brand-teal-dim text-brand-teal'
+                }`}
+              >
                 {method}
               </span>
-              <span className="text-slate-300">{path}</span>
-              <span className="text-slate-600 hidden sm:block">— {desc}</span>
+              <div>
+                <p className="font-mono text-xs text-brand-navy">{path}</p>
+                <p className="annotation mt-0.5">// {desc}</p>
+              </div>
             </div>
           ))}
         </div>

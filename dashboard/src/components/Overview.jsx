@@ -2,31 +2,39 @@ import { useState, useEffect, useCallback } from 'react'
 import {
   AreaChart, Area,
   BarChart, Bar,
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend,
-  ResponsiveContainer,
+  XAxis, YAxis, CartesianGrid, Tooltip,
+  Legend, ResponsiveContainer,
 } from 'recharts'
 
 const fmt = (n) => (n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n))
 
-function StatCard({ label, value, sub, valueClass = 'text-slate-100' }) {
+const tooltipStyle = {
+  contentStyle: {
+    backgroundColor: '#ffffff',
+    border: '1px solid #e2e4f0',
+    borderRadius: 10,
+    fontSize: 12,
+    color: '#0d1530',
+    boxShadow: '0 4px 16px rgba(13,21,48,0.08)',
+  },
+  labelStyle: { color: '#8b93b8', fontFamily: 'JetBrains Mono' },
+}
+
+function BigStat({ value, label, valueClass = 'text-brand-navy' }) {
   return (
-    <div className="bg-slate-900 rounded-xl border border-slate-800 p-5">
-      <p className="text-slate-400 text-xs mb-1">{label}</p>
-      <p className={`text-3xl font-bold ${valueClass}`}>{value}</p>
-      {sub && <p className="text-slate-500 text-xs mt-1">{sub}</p>}
+    <div className="text-center">
+      <p className={`font-mono text-4xl lg:text-5xl font-medium tabular-nums ${valueClass}`}>
+        {value}
+      </p>
+      <p className="annotation mt-2">{label}</p>
     </div>
   )
 }
 
-const tooltipStyle = {
-  contentStyle: { backgroundColor: '#020617', border: '1px solid #1e293b', borderRadius: 8, fontSize: 12 },
-  labelStyle: { color: '#94a3b8' },
-}
-
 export default function Overview({ apiKey }) {
-  const [stats, setStats] = useState(null)
+  const [stats, setStats]     = useState(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  const [error, setError]     = useState('')
 
   const loadStats = useCallback(async () => {
     setLoading(true)
@@ -44,110 +52,130 @@ export default function Overview({ apiKey }) {
 
   useEffect(() => { loadStats() }, [loadStats])
 
-  if (loading) return <p className="text-slate-400 text-sm">Loading…</p>
-  if (error)   return <p className="text-red-400 text-sm">{error}</p>
+  if (loading) return <p className="annotation pt-8">// loading…</p>
+  if (error)   return <p className="font-mono text-xs text-red-500 pt-8">{error}</p>
 
   const chartData = [...(stats?.history ?? [])]
     .reverse()
     .slice(-20)
     .map((h, i) => ({
       call: i + 1,
-      savings: parseFloat(h.savings_pct.toFixed(1)),
-      baseline: h.baseline_tokens,
+      savings:   parseFloat(h.savings_pct.toFixed(1)),
+      baseline:  h.baseline_tokens,
       optimized: h.optimized_tokens,
     }))
 
   return (
-    <div className="space-y-5">
-      <div className="flex items-center justify-between">
-        <h2 className="font-semibold">Overview</h2>
-        <button
-          onClick={loadStats}
-          className="text-xs text-slate-500 hover:text-slate-300 transition-colors"
-        >
-          Refresh
-        </button>
+    <div className="space-y-16">
+      {/* ── Section label ── */}
+      <div>
+        <div className="flex items-center justify-between mb-2">
+          <p className="annotation tracking-widest uppercase">Dashboard metrics — 2026</p>
+          <button
+            onClick={loadStats}
+            className="annotation hover:text-brand-navy transition-colors"
+          >
+            refresh
+          </button>
+        </div>
+        <div className="h-px bg-brand-border" />
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="API Calls"      value={stats.total_calls} />
-        <StatCard
-          label="Tokens Saved"
-          value={fmt(stats.total_tokens_saved)}
-          sub={`${fmt(stats.total_baseline_tokens)} → ${fmt(stats.total_optimized_tokens)}`}
-          valueClass="text-emerald-400"
-        />
-        <StatCard
-          label="Avg Savings"
-          value={`${stats.avg_savings_pct.toFixed(1)}%`}
-          valueClass="text-violet-400"
-        />
-        <StatCard
-          label="Context Quality"
+      {/* ── Big stats row ── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-4">
+        <BigStat value={stats.total_calls}              label="// api calls" />
+        <BigStat value={fmt(stats.total_tokens_saved)}  label="// tokens saved"   valueClass="text-brand-blue" />
+        <BigStat value={`${stats.avg_savings_pct.toFixed(1)}%`} label="// avg savings"  valueClass="text-brand-blue" />
+        <BigStat
           value={`${(stats.avg_quality_proxy * 100).toFixed(1)}%`}
-          sub="avg retained"
-          valueClass="text-sky-400"
+          label="// context retained"
+          valueClass="text-brand-teal"
         />
       </div>
+
+      {/* ── Token flow summary ── */}
+      {stats.total_calls > 0 && (
+        <div className="text-center space-y-2">
+          <p className="font-serif text-2xl text-brand-navy-mid">
+            {fmt(stats.total_baseline_tokens)} tokens in,{' '}
+            <em className="font-serif italic text-brand-blue">{fmt(stats.total_optimized_tokens)} out.</em>
+          </p>
+          <p className="annotation">// first-run benchmark · real api calls</p>
+        </div>
+      )}
 
       {chartData.length === 0 ? (
-        <div className="bg-slate-900 rounded-xl border border-slate-800 p-16 text-center">
-          <p className="text-slate-500 text-sm">
-            No data yet — run a compression from the <strong className="text-slate-400">Playground</strong> tab.
+        <div className="bg-white rounded-2xl border border-brand-border p-20 text-center">
+          <p className="font-serif text-2xl text-brand-navy-mid mb-3">No data yet.</p>
+          <p className="annotation">
+            // run a compression from the{' '}
+            <span className="text-brand-navy">Playground</span> tab to see charts
           </p>
         </div>
       ) : (
         <>
-          <div className="bg-slate-900 rounded-xl border border-slate-800 p-5">
-            <p className="text-sm font-medium text-slate-300 mb-4">
-              Savings % — last {chartData.length} calls
+          {/* ── Savings chart ── */}
+          <div className="bg-white rounded-2xl border border-brand-border p-8">
+            <p className="annotation tracking-widest uppercase mb-1">Savings %</p>
+            <p className="font-serif text-xl text-brand-navy mb-6">
+              last {chartData.length} calls
             </p>
-            <ResponsiveContainer width="100%" height={200}>
+            <ResponsiveContainer width="100%" height={220}>
               <AreaChart data={chartData} margin={{ top: 4, right: 4, left: 0, bottom: 16 }}>
                 <defs>
-                  <linearGradient id="gSavings" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%"  stopColor="#8b5cf6" stopOpacity={0.35} />
-                    <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
+                  <linearGradient id="gBlue" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%"  stopColor="#4f5fc4" stopOpacity={0.18} />
+                    <stop offset="95%" stopColor="#4f5fc4" stopOpacity={0}    />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e4f0" />
                 <XAxis
                   dataKey="call"
-                  tick={{ fill: '#64748b', fontSize: 11 }}
-                  label={{ value: 'Call #', position: 'insideBottom', offset: -10, fill: '#475569', fontSize: 11 }}
+                  tick={{ fill: '#8b93b8', fontSize: 11, fontFamily: 'JetBrains Mono' }}
+                  label={{ value: 'call #', position: 'insideBottom', offset: -10, fill: '#c4c8e2', fontSize: 10, fontFamily: 'JetBrains Mono' }}
                 />
                 <YAxis
                   domain={[0, 100]}
-                  tick={{ fill: '#64748b', fontSize: 11 }}
+                  tick={{ fill: '#8b93b8', fontSize: 11, fontFamily: 'JetBrains Mono' }}
                   tickFormatter={v => `${v}%`}
                 />
-                <Tooltip {...tooltipStyle} formatter={v => [`${v}%`, 'Savings']} />
+                <Tooltip {...tooltipStyle} formatter={v => [`${v}%`, 'savings']} />
                 <Area
                   type="monotone"
                   dataKey="savings"
-                  stroke="#8b5cf6"
-                  fill="url(#gSavings)"
+                  stroke="#4f5fc4"
+                  fill="url(#gBlue)"
                   strokeWidth={2}
                   dot={false}
-                  activeDot={{ r: 4, fill: '#8b5cf6' }}
+                  activeDot={{ r: 4, fill: '#4f5fc4', strokeWidth: 0 }}
                 />
               </AreaChart>
             </ResponsiveContainer>
           </div>
 
-          <div className="bg-slate-900 rounded-xl border border-slate-800 p-5">
-            <p className="text-sm font-medium text-slate-300 mb-4">
-              Baseline vs Optimized tokens — last {chartData.length} calls
+          {/* ── Token comparison chart ── */}
+          <div className="bg-white rounded-2xl border border-brand-border p-8">
+            <p className="annotation tracking-widest uppercase mb-1">Token footprint</p>
+            <p className="font-serif text-xl text-brand-navy mb-6">
+              baseline <em className="italic text-brand-blue">vs</em> optimized
             </p>
-            <ResponsiveContainer width="100%" height={200}>
+            <ResponsiveContainer width="100%" height={220}>
               <BarChart data={chartData} barGap={2} margin={{ top: 4, right: 4, left: 0, bottom: 4 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                <XAxis dataKey="call" tick={{ fill: '#64748b', fontSize: 11 }} />
-                <YAxis tick={{ fill: '#64748b', fontSize: 11 }} tickFormatter={fmt} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e4f0" />
+                <XAxis
+                  dataKey="call"
+                  tick={{ fill: '#8b93b8', fontSize: 11, fontFamily: 'JetBrains Mono' }}
+                />
+                <YAxis
+                  tick={{ fill: '#8b93b8', fontSize: 11, fontFamily: 'JetBrains Mono' }}
+                  tickFormatter={fmt}
+                />
                 <Tooltip {...tooltipStyle} />
-                <Legend wrapperStyle={{ fontSize: 12, color: '#94a3b8' }} />
-                <Bar dataKey="baseline"  name="Baseline"  fill="#334155" radius={[3, 3, 0, 0]} />
-                <Bar dataKey="optimized" name="Optimized" fill="#7c3aed" radius={[3, 3, 0, 0]} />
+                <Legend
+                  wrapperStyle={{ fontSize: 11, color: '#8b93b8', fontFamily: 'JetBrains Mono' }}
+                />
+                <Bar dataKey="baseline"  name="baseline"  fill="#e2e4f0" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="optimized" name="optimized" fill="#4f5fc4" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>

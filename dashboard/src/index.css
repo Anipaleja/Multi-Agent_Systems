@@ -3,9 +3,16 @@
 @tailwind utilities;
 
 body {
-  @apply bg-slate-950 text-slate-100 antialiased;
+  @apply bg-brand-bg text-brand-navy font-sans antialiased;
 }
 
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { @apply bg-slate-900; }
-::-webkit-scrollbar-thumb { @apply bg-slate-700 rounded-full; }
+::-webkit-scrollbar          { width: 5px; height: 5px; }
+::-webkit-scrollbar-track    { @apply bg-brand-bg; }
+::-webkit-scrollbar-thumb    { @apply bg-brand-border rounded-full; }
+
+/* Cormorant italic accent utility */
+.accent-blue  { @apply font-serif italic text-brand-blue; }
+.accent-teal  { @apply font-serif italic text-brand-teal; }
+
+/* Code annotation style  // text · text */
+.annotation { @apply font-mono text-xs text-brand-muted tracking-wide; }
