@@ -1,35 +1,57 @@
 # Multi-Agent Systems
 
-A repository for exploring and demonstrating multi-agent AI systems, communication patterns, and token efficiency analysis.
+A focused toolkit and collection of experiments for researching multi-agent AI systems, communication protocols, and token-efficiency techniques.
 
-## Projects
+This repository bundles a local demo environment, benchmarks, and the `token_efficiency_model` library used to measure and reduce redundant token transmission in agent chains.
 
-### Default Testing Environment
+**Contents**
+- `default_testing/` — interactive React demo and token dashboard
+- `token_efficiency_model/` — core Python libraries, samplers, compressors, and pipelines
+- `eval/` & `eval_runs/` — evaluation pipelines and sample run outputs
 
-Located in `default_testing/`, this is a self-contained React application that demonstrates how three AI agents collaborate on tasks with full token usage tracking.
+**Quick Start**
 
-**Key Features:**
-- Three specialized agents (Architect, Builder, Reviewer) working sequentially
-- Real-time token usage tracking and visualization
-- Demonstration of token redundancy in multi-agent systems
-- Interactive dashboard showing efficiency metrics
+1. Run the React demo (local Ollama recommended):
 
-**Get Started:**
 ```bash
 cd default_testing
 npm install
 npm run dev
 ```
 
-See [default_testing/README.md](./default_testing/README.md) for detailed documentation.
+2. Use the Python experiments and benchmarks:
 
-## Purpose
+```bash
+source .venv/bin/activate
+python -m token_efficiency_model.experiments.run_simulation
+```
 
-This repository demonstrates the core challenges in multi-agent systems, particularly:
-- Token inefficiency when agents re-ingest each other's outputs
-- Communication patterns between sequential agents
-- Real-world cost implications of redundant context in production systems
+**High-Level Goals**
+- Demonstrate how sequential agent chains generate redundant tokens and measure cost/efficiency.
+- Provide modular tooling to experiment with compression, shared-memory middleware, and routing strategies.
+- Offer reproducible experiments and visual dashboards for analysis.
 
-## What This Demonstrates
+**Architecture Overview**
 
-The testing environment shows that in a typical sequential agent chain, the majority of tokens consumed are **redundant** — previous agents' outputs being re-sent verbatim to downstream agents. This redundancy represents significant API costs in production systems.
+```mermaid
+flowchart LR
+	User[User / Task] --> A(Architect Agent)
+	A --> B(Builder Agent)
+	B --> C(Reviewer Agent)
+	C --> Result[Final Result]
+	subgraph Middleware
+		M[Token Efficiency Pipeline]\n(compression, recall, routing)
+	end
+	A --- M
+	B --- M
+	C --- M
+	M --> Result
+```
+
+This diagram highlights the canonical sequential flow (Architect → Builder → Reviewer) with an optional middleware pipeline that can reduce redundant tokens via compression, selective recall, or routing.
+
+See the component-specific README files for deeper details:
+- [default_testing/README.md](default_testing/README.md)
+- [token_efficiency_model/README.md](token_efficiency_model/README.md)
+
+If you'd like, I can also: add diagrams for the `eval/` pipelines, create a top-level architecture SVG, or generate a short CONTRIBUTING guide.
