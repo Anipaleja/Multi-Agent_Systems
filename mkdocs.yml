@@ -8,6 +8,7 @@ theme:
 nav:
   - Home: index.md
   - Quick Start: quick-start.md
+  - Integration Guide: integration.md
   - Evaluation Framework: evaluation.md
   - Token Efficiency Model: token-efficiency-model.md
   - Default Testing App: default-testing.md
